@@ -7,7 +7,6 @@ Tests for :mod:`~exa.widget`
 """
 #from exa.test import UnitTester
 from unittest import TestCase
-from exawidgets.widget import Widget, ContainerWidget
 
 
 class TestWidget(TestCase):

@@ -5,7 +5,7 @@
 ##################
 
 */
-'use strict';
+"use strict";
 var widgets = require("jupyter-js-widgets");
 var THREE = require("three");
 var TrackballControls = require("three-trackballcontrols");

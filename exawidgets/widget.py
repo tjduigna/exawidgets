@@ -11,7 +11,6 @@ and `ipywidgets`_ packages.
 .. _traitlets: https://traitlets.readthedocs.io/en/stable/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 """
-import os
 from ipywidgets import DOMWidget
 from traitlets import Unicode, Integer, Bool
 
