@@ -1,0 +1,10 @@
+jupyter
+notebook
+ipywidgets
+ipyparallel
+sphinx
+nose
+six
+sphinx_rtd_theme
+pandoc
+nbsphinx
