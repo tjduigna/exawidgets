@@ -17,29 +17,21 @@ is used.
 */
 'use strict';
 var widgets = require("jupyter-js-widgets");
+var THREE = require("three");
+var _ = require("underscore");
 var TestApp = require("./test.js");
 
-/*
-require.config({
-    shim: {
-        "nbextensions/exa/test": {
-            exports: 'TestApp'
-        },
-        "nbextensions/exa/info": {
-            exports: 'InfoApp'
-        }
-    },
-});
-*/
+class ContainerModel extends widgets.DOMWidgetModel {
+    get defaults() {
+      return _.extend({}, widgets.DOMWidgetModel.prototype.defaults, {
+            _model_module: "jupyter-exawidgets",
+            _view_module: "jupyter-exawidgets",
+            _model_name: "ContainerModel",
+            _view_name: "ContainerView"
+        });
+    }
+}
 
-/*
-define([
-    "jupyter-js-widgets",
-    "nbextensions/exa/test",
-    "nbextensions/exa/info"
-],
-*/
-//function(widgets, TestApp) {
 class ContainerView extends widgets.DOMWidgetView {
     /*"""
     ContainerView
@@ -52,7 +44,6 @@ class ContainerView extends widgets.DOMWidgetView {
     Warning:
         Do not override the DOMWidgetView constructor ("initialize").
     */
-
     render() {
         /*"""
         render
@@ -80,6 +71,7 @@ class ContainerView extends widgets.DOMWidgetView {
         Container view classes that extend this class can overwrite this
         method to customize the behavior of their data specific view.
         */
+	      console.log('WE ARE CONTAINER');
         this.if_empty();
     };
 
@@ -211,6 +203,6 @@ class ContainerView extends widgets.DOMWidgetView {
 };
 
 module.exports = {
-    "ContainerView": ContainerView
-};
-//});
+    "ContainerView": ContainerView,
+    "ContainerModel": ContainerModel
+}

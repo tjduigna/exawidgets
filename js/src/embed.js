@@ -8,8 +8,8 @@
 var _ = require("underscore");
 module.exports = _.extend(
     {},
-    require("./app3d.js"),
     require("./container.js"),
+    require("./app3d.js"),
     require("./field.js"),
     require("./gui.js"),
     require("./info.js"),

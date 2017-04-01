@@ -6,13 +6,14 @@ Tests for :mod:`~exa.widget`
 ################################
 """
 #from exa.test import UnitTester
-from unittest import UnitTester
+from unittest import TestCase
 from exawidgets.widget import Widget, ContainerWidget
 
 
-class TestWidget(UnitTester):
-    """
-    Test for the :class:`~exa.editor.Editor` are performed on the editor's
-    source code itself.
-    """
+class TestWidget(TestCase):
+    """Test for the :class:`~exawidgets.widget.Widget`."""
+    pass
+
+class TestContainerWidget(TestCase):
+    """Test for the :class:`~exawidgets.widget.Widget`."""
     pass

@@ -77,10 +77,8 @@ def update_package_data(distribution):
 
 def has_npm():
     try:
-        if pltfrm:
-            check_call(["npm", "--version"], shell=True)
-        else:
-            check_call(["npm", "--version"])
+        shell = {'shell': True} if pltfrm else {}
+        check_call(["npm", "--version"], **shell)
         return True
     except Exception:
         return False
@@ -135,9 +133,6 @@ setup_args = {
     "version": version,
     "description": "The exawidgets package for data visualization.",
     "long_description": long_description,
-    #"package_data": {"exawidgets": ["_static/*.bz2"]},
-    #"include_package_data": True,
-    #"entry_points": {"console_scripts": ["exa=exa.__main__:main"]},
     "data_files": [
         ("share/jupyter/nbextensions/jupyter-exawidgets", [
             "build/widgets/extension.js",
