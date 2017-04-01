@@ -1,6 +1,6 @@
 {
   "name": "jupyter-exawidgets",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The exawidgets package for data visualization.",
   "author": "Thomas J. Duignan and Alex Marchenko",
   "license": "Apache-2.0",
