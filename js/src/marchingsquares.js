@@ -4,7 +4,7 @@ marchingsquares.js
 ========================
 
 */
-'use strict';
+"use strict";
 
 var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
 
@@ -39,16 +39,16 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
         var x = [];
         var y = [];
         var dat = [];
-        // Default to the 'z' axis
+        // Default to the "z" axis
         var xidx = 0;
         var yidx = 1;
         var plidx = 2;
 
-        if (axis == 'x') {
+        if (axis == "x") {
             xidx = 0;
             yidx = 2;
             plidx = 1;
-        } else if (axis == 'y') {
+        } else if (axis == "y") {
             xidx = 1;
             yidx = 2;
             plidx = 0;
@@ -80,7 +80,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
             };
         };
 
-        if (axis == 'z') {
+        if (axis == "z") {
             for(var nx = 0; nx < dims[0]; nx++) {
                 var tmp = [];
                 for(var ny = 0; ny < dims[1]; ny++) {
@@ -88,7 +88,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
                 };
                 dat.push(tmp);
             };
-        } else if (axis == 'x') {
+        } else if (axis == "x") {
             for(var nx = 0; nx < dims[0]; nx++) {
                 var tmp = [];
                 for(var nz = 0; nz < dims[2]; nz++) {
@@ -96,7 +96,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
                 };
                 dat.push(tmp);
             };
-        } else if (axis == 'y') {
+        } else if (axis == "y") {
             for(var ny = 0; ny < dims[1]; ny++) {
                 var tmp = [];
                 for(var nz = 0; nz < dims[2]; nz++) {
@@ -105,7 +105,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
                 dat.push(tmp);
             };
         };
-        return {'dat': dat, 'x': x, 'y': y};
+        return {"dat": dat, "x": x, "y": y};
     };
 
     // Interpolate a value along the side of a square
@@ -299,14 +299,14 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
         };
     };
     // Default behavior of algorithm
-    if (axis == 'z') {
+    if (axis == "z") {
         return cverts;
     // cverts is populated assuming x, y correspond to x, y
     // dimensions in the cube file, but to avoid a double nested
     // if else inside the tight O(N^2) loop, just move around the
     // elements accordingly afterwards according to the axis of
     // interest
-    } else if (axis == 'x') {
+    } else if (axis == "x") {
         var rear = [];
         for(var c = 0; c < nc; c++) {
             rear.push([]);
@@ -315,7 +315,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
                 rear[c].push([cverts[c][v][0], val, cverts[c][v][1]]);
             };
         };
-    } else if (axis == 'y') {
+    } else if (axis == "y") {
         var rear = [];
         for(var c = 0; c < nc; c++) {
             rear.push([]);
@@ -327,3 +327,7 @@ var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
     };
     return rear;
 };
+
+module.exports = {
+    "Contour": Contour
+}

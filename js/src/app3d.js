@@ -11,32 +11,6 @@ var THREE = require("three");
 var TrackballControls = require("three-trackballcontrols");
 var utility = require("./utility.js");
 
-/*
-require.config({
-    shim: {
-        "nbextensions/exa/lib/three.min": {
-            exports: 'THREE'
-        },
-
-        "nbextensions/exa/lib/TrackballControls": {
-            deps: ["nbextensions/exa/lib/three.min"],
-            exports: 'THREE.TrackballControls'
-        },
-
-        "nbextensions/exa/utility": {
-            exports: 'utility'
-        },
-    },
-});
-*/
-/*
-define([
-    "nbextensions/exa/lib/three.min",
-    "nbextensions/exa/lib/TrackballControls",
-    "nbextensions/exa/utility"
-],
-*/
-//function(THREE, TrackballControls, utility) {
 class App3D {
     /*"""
     App3D
@@ -69,7 +43,7 @@ class App3D {
         this.controls.staticMoving = true;
         this.controls.dynamicDampingFactor = 0.3;
         this.controls.keys = [65, 83, 68];
-        this.controls.addEventListener('change', this.render.bind(this));
+        this.controls.addEventListener("change", this.render.bind(this));
 
         this.dlight0 = new THREE.DirectionalLight(0xFFFFFF, 0.3);
         this.dlight0.position.set(-100, -100, -100);
@@ -198,17 +172,17 @@ class App3D {
         });
         var xyz = utility.create_float_array_xyz(x, y, z);
         var n = Math.floor(xyz.length / 3);
-        if (!colors.hasOwnProperty('length')) {
+        if (!colors.hasOwnProperty("length")) {
             colors = utility.repeat_object(colors, n);
         };
-        if (!radii.hasOwnProperty('length')) {
+        if (!radii.hasOwnProperty("length")) {
             radii = utility.repeat_float(radii, n);
         };
         colors = this.flatten_color(colors);
         radii = new Float32Array(radii);
-        geometry.addAttribute('position', new THREE.BufferAttribute(xyz, 3));
-        geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.addAttribute('size', new THREE.BufferAttribute(radii, 1));
+        geometry.addAttribute("position", new THREE.BufferAttribute(xyz, 3));
+        geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3));
+        geometry.addAttribute("size", new THREE.BufferAttribute(radii, 1));
         var points = new THREE.Points(geometry, material);
         this.scene.add(points);
         return [points];
@@ -232,11 +206,11 @@ class App3D {
             spheres (list): List of THREE.Mesh objects
         */
         var n = 1;
-        if (x.hasOwnProperty('length')) {
+        if (x.hasOwnProperty("length")) {
             n = x.length;
-        } else if (y.hasOwnProperty('length')) {
+        } else if (y.hasOwnProperty("length")) {
             n = y.length;
-        } else if (z.hasOwnProperty('length')) {
+        } else if (z.hasOwnProperty("length")) {
             n = z.length;
         };
         if (colors === undefined) {
@@ -245,10 +219,10 @@ class App3D {
         if (radii == undefined) {
             radii = 1;
         }
-        if (!colors.hasOwnProperty('length')) {
+        if (!colors.hasOwnProperty("length")) {
             colors = utility.repeat_object(colors, n);
         };
-        if (!radii.hasOwnProperty('length')) {
+        if (!radii.hasOwnProperty("length")) {
             radii = utility.repeat_float(radii, n);
         };
         var geometries = {};
@@ -423,12 +397,12 @@ class App3D {
         Set the camera in the default position and have it look at the origin.
 
         Args:
-            kwargs: {'x': x, 'y': y, ..., 'ox': ox, ...}
+            kwargs: {"x": x, "y": y, ..., "ox": ox, ...}
         */
         if (kwargs === undefined) {
             kwargs = {};
         };
-        for (var key of ['x', 'y', 'z']) {
+        for (var key of ["x", "y", "z"]) {
             if (!kwargs.hasOwnProperty(key)) {
                 kwargs[key] = 60.0;
             } else {
@@ -437,7 +411,7 @@ class App3D {
                 };
             };
         };
-        for (var key of ['rx', 'ry', 'rz']) {
+        for (var key of ["rx", "ry", "rz"]) {
             if (!kwargs.hasOwnProperty(key)) {
                 kwargs[key] = 0.5;
             } else {
@@ -446,7 +420,7 @@ class App3D {
                 };
             };
         };
-        for (var key of ['ox', 'oy', 'oz']) {
+        for (var key of ["ox", "oy", "oz"]) {
             if (!kwargs.hasOwnProperty(key)) {
                 kwargs[key] = 0.0;
             } else {
@@ -456,12 +430,12 @@ class App3D {
             };
         };
 
-        var x = kwargs['x'] + kwargs['rx'];
-        var y = kwargs['y'] + kwargs['ry'];
-        var z = kwargs['z'] + kwargs['rz'];
-        var ox = kwargs['ox'];
-        var oy = kwargs['oy'];
-        var oz = kwargs['oz'];
+        var x = kwargs["x"] + kwargs["rx"];
+        var y = kwargs["y"] + kwargs["ry"];
+        var z = kwargs["z"] + kwargs["rz"];
+        var ox = kwargs["ox"];
+        var oy = kwargs["oy"];
+        var oz = kwargs["oz"];
         this.camera.position.set(x, y, z);
         this.target = new THREE.Vector3(ox, oy, oz);
         this.camera.lookAt(this.target);
@@ -481,7 +455,7 @@ class App3D {
             rz = 2.0;
         }
         var position;
-        if (mesh.geometry.type === 'BufferGeometry') {
+        if (mesh.geometry.type === "BufferGeometry") {
             position = mesh.geometry.attributes.position.array;
         } else {
             var n = mesh.geometry.vertices.length;
@@ -512,8 +486,8 @@ class App3D {
         xyz.y += ry;
         xyz.z *= 1.2;
         xyz.z += rz;
-        var kwargs = {'x': xyz.x, 'y': xyz.y, 'z': xyz.z,
-                      'ox': oxyz[0], 'oy': oxyz[1], 'oz': oxyz[2]};
+        var kwargs = {"x": xyz.x, "y": xyz.y, "z": xyz.z,
+                      "ox": oxyz[0], "oy": oxyz[1], "oz": oxyz[2]};
         this.set_camera(kwargs);
     };
 
@@ -531,8 +505,8 @@ class App3D {
         max.x *= 1.2;
         max.y *= 1.2;
         max.z *= 1.2;
-        var kwargs = {'x': max.x, 'y': max.y, 'z': max.z,
-                      'ox': ox, 'oy': oy, 'oz': oz};
+        var kwargs = {"x": max.x, "y": max.y, "z": max.z,
+                      "ox": ox, "oy": oy, "oz": oz};
         this.set_camera(kwargs);
     };
 
@@ -550,21 +524,21 @@ class App3D {
             isovalue = 0;
         };
         if (algorithm === undefined) {
-            algorithm = 'mc';
+            algorithm = "mc";
         };
         if (sides === undefined) {
             sides = 1;
         };
 
-        if (algorithm == 'mc' && sides == 1) {
+        if (algorithm == "mc" && sides == 1) {
             var field_mesh = this.march_cubes1(field, isovalue);
             //this.scene.add(field_mesh);
             return field_mesh;
-        } else if (algorithm == 'mc' && sides == 2) {
+        } else if (algorithm == "mc" && sides == 2) {
             var field_meshes = this.march_cubes2(field, isovalue);
             return field_meshes;
         } else {
-            console.log('NotImplementedError');
+            console.log("NotImplementedError");
         };
     };
 
@@ -634,7 +608,7 @@ class App3D {
         See Also:
             **field.js**
         */
-        console.log('march_cubes1');
+        console.log("march_cubes1");
         console.log(Math.min(...field.values));
         console.log(Math.max(...field.values));
         var nx = field.nx;
@@ -726,7 +700,7 @@ class App3D {
         ------------------------
         Similar to the above but for finding positive and negative surfaces.
         */
-        console.log('march_cubes2');
+        console.log("march_cubes2");
         var nx = field.nx;
         var ny = field.ny;
         var nz = field.nz;
@@ -1233,5 +1207,3 @@ App3D.prototype.bits = [1, 2, 4, 8, 16, 32, 64, 128];
 module.exports = {
     "App3D" : App3D
 };
-//});
-//});

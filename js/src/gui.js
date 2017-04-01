@@ -6,24 +6,10 @@ gui.js
 ============
 Basic gui for container views.
 */
-'use strict';
+"use strict";
 var dat = require("dat-gui");
 
-/*
-require.config({
-    shim: {
-        "nbextensions/exa/lib/dat.gui.min": {
-            exports: 'dat'
-        },
-    },
-});
-*/
-/*
-define([
-    "nbextensions/exa/lib/dat.gui.min",
-],
-*/
-//function(dat) {
+
 class ContainerGUI extends dat.GUI {
     /*"""
     ContainerGUI
@@ -31,7 +17,7 @@ class ContainerGUI extends dat.GUI {
     */
     constructor(width) {
         super({autoPlace: false, width: width});
-        this.custom_css = document.createElement('style');
+        this.custom_css = document.createElement("style");
         this.custom_css.innerHTML = this.gui_style;
     };
 };

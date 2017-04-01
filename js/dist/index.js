@@ -59,11 +59,11 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	    __webpack_require__(15),
 	    __webpack_require__(10),
 	    __webpack_require__(16),
-	    __webpack_require__(17),
 	    __webpack_require__(5),
-	    __webpack_require__(14)
+	    __webpack_require__(14),
+	    __webpack_require__(9)
 	);
-	module.exports["version"] = __webpack_require__(18).version;
+	module.exports["version"] = __webpack_require__(17).version;
 
 
 /***/ },
@@ -1641,24 +1641,56 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	empty but doesn't have a dedicated application, the info application (info.js)
 	is used.
 	*/
-	'use strict';
+	"use strict";
 	var widgets = __webpack_require__(3);
 	var THREE = __webpack_require__(4);
 	var _ = __webpack_require__(1);
-	var TestApp = __webpack_require__(5);
+	var TestApp = __webpack_require__(5).TestApp;
 	
-	class ContainerModel extends widgets.DOMWidgetModel {
+	class BaseModel extends widgets.DOMWidgetModel {
 	    get defaults() {
 	      return _.extend({}, widgets.DOMWidgetModel.prototype.defaults, {
 	            _model_module: "jupyter-exawidgets",
 	            _view_module: "jupyter-exawidgets",
-	            _model_name: "ContainerModel",
-	            _view_name: "ContainerView"
+	            _model_name: "BaseModel",
+	            _view_name: "BaseView",
+	            width: 800,
+	            height: 500
 	        });
 	    }
 	}
 	
-	class ContainerView extends widgets.DOMWidgetView {
+	class BaseView extends widgets.DOMWidgetView {
+	
+	}
+	
+	class ContainerModel extends BaseModel {
+	    get defaults() {
+	      return _.extend({}, BaseModel.prototype.defaults, {
+	            _model_module: "jupyter-exawidgets",
+	            _view_module: "jupyter-exawidgets",
+	            _model_name: "ContainerModel",
+	            _view_name: "ContainerView",
+	            renderer_type: "auto",
+	            gui_width: 250,
+	            width: 800,
+	            height: 500
+	        });
+	    }
+	
+	
+	    get serializers() {
+	      return _.extend({
+	            scene: { deserialize: widgets.unpack_models },
+	            camera: { deserialize: widgets.unpack_models },
+	            controls: { deserialize: widgets.unpack_models },
+	            effect: { deserialize: widgets.unpack_models }
+	        }, widgets.DOMWidgetModel.serializers)
+	    }
+	    
+	}
+	
+	class ContainerView extends BaseView {
 	    /*"""
 	    ContainerView
 	    ===============
@@ -1697,7 +1729,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        Container view classes that extend this class can overwrite this
 	        method to customize the behavior of their data specific view.
 	        */
-		      console.log('WE ARE CONTAINER');
+		      console.log("WE ARE CONTAINER");
 	        this.if_empty();
 	    };
 	
@@ -1709,7 +1741,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        that attempts to convert JSON strings to objects.
 	        */
 	        var obj = this.model.get(name);
-	        if (typeof obj === 'string') {
+	        if (typeof obj === "string") {
 	            try {
 	                obj = JSON.parse(obj);
 	            } catch(err) {
@@ -1743,7 +1775,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        If the (exa) container object is empty, render the test application
 	        widget.
 	        */
-	        var check = this.get_trait('test');
+	        var check = this.get_trait("test");
 	        if (check === true) {
 	            console.log("Empty container, displaying test interface!");
 	            this.app = new TestApp(this);
@@ -1763,12 +1795,12 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        this.get_fps();
 	        this.get_field_values();
 	        this.get_field_indices();
-	        this.listenTo(this.model, 'change:width', this.get_width);
-	        this.listenTo(this.model, 'change:height', this.get_height);
-	        this.listenTo(this.model, 'change:gui_width', this.get_gui_width);
-	        this.listenTo(this.model, 'change:fps', this.get_fps);
-	        this.listenTo(this.model, 'change:field_values', this.get_field_values);
-	        this.listenTo(this.model, 'change:field_indices', this.get_field_indices);
+	        this.listenTo(this.model, "change:width", this.get_width);
+	        this.listenTo(this.model, "change:height", this.get_height);
+	        this.listenTo(this.model, "change:gui_width", this.get_gui_width);
+	        this.listenTo(this.model, "change:fps", this.get_fps);
+	        this.listenTo(this.model, "change:field_values", this.get_field_values);
+	        this.listenTo(this.model, "change:field_indices", this.get_field_indices);
 	    };
 	
 	    create_container() {
@@ -1778,13 +1810,13 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        Create a resizable container.
 	        */
 	        var self = this;
-	        this.container = $('<div/>').width(this.width).height(this.height).resizable({
+	        this.container = $("<div/>").width(this.width).height(this.height).resizable({
 	            aspectRatio: false,
 	            resize: function(event, ui) {
 	                self.width = ui.size.width - self.gui_width;
 	                self.height = ui.size.height;
-	                self.set_trait('width', self.width);
-	                self.set_trait('height', self.height);
+	                self.set_trait("width", self.width);
+	                self.set_trait("height", self.height);
 	                self.canvas.width(self.width);
 	                self.canvas.height(self.height);
 	                self.app.resize();
@@ -1797,38 +1829,40 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        ----------------
 	        Create a canvas for WebGL.
 	        */
-	        this.canvas = $('<canvas/>').width(this.width - this.gui_width).height(this.height);
-	        this.canvas.css('position', 'absolute');
-	        this.canvas.css('top', 0);
-	        this.canvas.css('left', this.gui_width);
+	        this.canvas = $("<canvas/>").width(this.width - this.gui_width).height(this.height);
+	        this.canvas.css("position", "absolute");
+	        this.canvas.css("top", 0);
+	        this.canvas.css("left", this.gui_width);
 	    };
 	
 	    get_gui_width() {
-	        this.gui_width = this.get_trait('gui_width');
+	        this.gui_width = this.get_trait("gui_width");
 	    };
 	
 	    get_fps() {
-	        this.fps = this.get_trait('fps');
+	        this.fps = this.get_trait("fps");
 	    };
 	
 	    get_width() {
-	        this.width = this.get_trait('width');
+	        this.width = this.get_trait("width");
 	    };
 	
 	    get_height() {
-	        this.height = this.get_trait('height');
+	        this.height = this.get_trait("height");
 	    };
 	
 	    get_field_values() {
-	        this.field_values = this.get_trait('field_values');
+	        this.field_values = this.get_trait("field_values");
 	    };
 	
 	    get_field_indices() {
-	        this.field_indices = this.get_trait('field_indices');
+	        this.field_indices = this.get_trait("field_indices");
 	    };
 	};
 	
 	module.exports = {
+	    "BaseModel": BaseModel,
+	    "BaseView": BaseView,
 	    "ContainerView": ContainerView,
 	    "ContainerModel": ContainerModel
 	}
@@ -44156,30 +44190,12 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	A test application called when an empty container widget is rendered in a
 	Jupyter notebook environment.
 	*/
-	'use strict';
-	var App3D = __webpack_require__(6);
-	var ContainerGUI = __webpack_require__(10);
+	"use strict";
+	var App3D = __webpack_require__(6).App3D;
+	var ContainerGUI = __webpack_require__(10).ContainerGUI;
 	var num = __webpack_require__(14);
 	var field = __webpack_require__(15);
 	
-	/*
-	require.config({
-	    shim: {
-	        "nbextensions/exa/app3d": {exports: 'App3D'},
-	        "nbextensions/exa/gui": {exports: 'ContainerGUI'},
-	        "nbextensions/exa/num": {exports: 'num'},
-	        "nbextensions/exa/field": {exports: 'field'},
-	    },
-	});
-	*/
-	/*
-	define([
-	    "nbextensions/exa/app3d",
-	    "nbextensions/exa/gui",
-	    "nbextensions/exa/num",
-	    "nbextensions/exa/field"
-	],
-	*/
 	class TestApp {
 	    /*"""
 	    TestContainer
@@ -44190,21 +44206,21 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        this.view = view;
 	        this.view.create_canvas();
 	        this.meshes = [];
-	        this.app3d = new App3D.App3D(this.view.canvas);
+	        this.app3d = new App3D(this.view.canvas);
 	        this.create_gui();
 	        this.view.container.append(this.gui.domElement);
 	        this.view.container.append(this.gui.custom_css);
 	        this.view.container.append(this.view.canvas);
 	        var view_self = this.view;
 	        this.app3d.render();
-	        this.view.on('displayed', function() {
+	        this.view.on("displayed", function() {
 	            view_self.app.app3d.animate();
 	            view_self.app.app3d.controls.handleResize();
 	        });
-	        this.view.send({'type': 'message',
-	                        'app': 'TestApp',
-	                        'content': 'True',
-	                        'data': 'test app message'});
+	        this.view.send({"type": "message",
+	                        "app": "TestApp",
+	                        "content": "True",
+	                        "data": "test app message"});
 	    };
 	
 	    create_gui() {
@@ -44218,43 +44234,43 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	
 	        // GUI levels are the heirarchy of folders in dat gui 0: top level
 	        this.top = {
-	            'clear': function() {
+	            "clear": function() {
 	                self.app3d.remove_meshes(self.meshes);
 	            },
 	
-	            'test mesh': function() {
+	            "test mesh": function() {
 	                self.app3d.remove_meshes(self.meshes);
 	                self.meshes = self.app3d.test_mesh();
 	            },
 	
-	            'test phong': function() {
+	            "test phong": function() {
 	                self.app3d.remove_meshes(self.meshes);
 	                self.meshes = self.app3d.test_mesh(true);
 	            },
 	        };
-	        this.top.clear_button = this.gui.add(this.top, 'clear');
-	        this.top.test_mesh_button = this.gui.add(this.top, 'test mesh');
-	        this.top.test_phong_button = this.gui.add(this.top, 'test phong');
+	        this.top.clear_button = this.gui.add(this.top, "clear");
+	        this.top.test_mesh_button = this.gui.add(this.top, "test mesh");
+	        this.top.test_phong_button = this.gui.add(this.top, "test phong");
 	
 	        this.fields = {
-	            'field type': null,
-	            'isovalue': 1.0, 'boxsize': 3,
-	            'nx': 13,   'ny': 13,   'nz': 13,
-	            'ox': -3.0, 'oy': -3.0, 'oz': -3.0,
-	            'fx':  3.0, 'fy':  3.0, 'fz':  3.0,
-	            'dxi': 0.5, 'dyj': 0.5, 'dzk': 0.5,
-	            'dxj': 0.0, 'dyi': 0.0, 'dzi': 0.0,
-	            'dxk': 0.0, 'dyk': 0.0, 'dzj': 0.0,
+	            "field type": null,
+	            "isovalue": 1.0, "boxsize": 3,
+	            "nx": 13,   "ny": 13,   "nz": 13,
+	            "ox": -3.0, "oy": -3.0, "oz": -3.0,
+	            "fx":  3.0, "fy":  3.0, "fz":  3.0,
+	            "dxi": 0.5, "dyj": 0.5, "dzk": 0.5,
+	            "dxj": 0.0, "dyi": 0.0, "dzi": 0.0,
+	            "dxk": 0.0, "dyk": 0.0, "dzj": 0.0,
 	        };
-	        this.fields['folder'] = this.gui.addFolder('fields');
-	        this.fields['field_type_dropdown'] = this.fields.folder.add(this.fields, 'field type', num.function_list_3d);
-	        this.fields['isovalue_slider'] = this.fields.folder.add(this.fields, 'isovalue', 0.1, 10.0);
-	        this.fields['boxsize_slider'] = this.fields.folder.add(this.fields, 'boxsize', 3, 5);
-	        this.fields['nx_slider'] = this.fields.folder.add(this.fields, 'nx').min(5).max(25).step(1);
-	        this.fields['ny_slider'] = this.fields.folder.add(this.fields, 'ny').min(5).max(25).step(1);
-	        this.fields['nz_slider'] = this.fields.folder.add(this.fields, 'nz').min(5).max(25).step(1);
+	        this.fields["folder"] = this.gui.addFolder("fields");
+	        this.fields["field_type_dropdown"] = this.fields.folder.add(this.fields, "field type", num.function_list_3d);
+	        this.fields["isovalue_slider"] = this.fields.folder.add(this.fields, "isovalue", 0.1, 10.0);
+	        this.fields["boxsize_slider"] = this.fields.folder.add(this.fields, "boxsize", 3, 5);
+	        this.fields["nx_slider"] = this.fields.folder.add(this.fields, "nx").min(5).max(25).step(1);
+	        this.fields["ny_slider"] = this.fields.folder.add(this.fields, "ny").min(5).max(25).step(1);
+	        this.fields["nz_slider"] = this.fields.folder.add(this.fields, "nz").min(5).max(25).step(1);
 	        this.fields.field_type_dropdown.onFinishChange(function(field_type) {
-	            self.fields['field type'] = field_type;
+	            self.fields["field type"] = field_type;
 	            self.fields.field = new field.ScalarField(self.fields, num[field_type]);
 	            self.render_field();
 	        });
@@ -44307,12 +44323,8 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	
 	    render_field() {
 	        this.app3d.remove_meshes(this.meshes);
-	        //console.log('rendering field with array dimensions');
-	        //console.log('x length', this.fields.field.x.length);
-	        //console.log('y length', this.fields.field.y.length);
-	        //console.log('z length', this.fields.field.z.length);
 	        this.meshes = this.app3d.add_scalar_field(this.fields.field, this.fields.isovalue, this.fields.sides);
-	        this.app3d.set_camera({'x': 5.0, 'y': 5.0, 'z': 5.0});
+	        this.app3d.set_camera({"x": 5.0, "y": 5.0, "z": 5.0});
 	    };
 	};
 	
@@ -44332,38 +44344,12 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	##################
 	
 	*/
-	'use strict';
+	"use strict";
 	var widgets = __webpack_require__(3);
 	var THREE = __webpack_require__(4);
 	var TrackballControls = __webpack_require__(7);
 	var utility = __webpack_require__(9);
 	
-	/*
-	require.config({
-	    shim: {
-	        "nbextensions/exa/lib/three.min": {
-	            exports: 'THREE'
-	        },
-	
-	        "nbextensions/exa/lib/TrackballControls": {
-	            deps: ["nbextensions/exa/lib/three.min"],
-	            exports: 'THREE.TrackballControls'
-	        },
-	
-	        "nbextensions/exa/utility": {
-	            exports: 'utility'
-	        },
-	    },
-	});
-	*/
-	/*
-	define([
-	    "nbextensions/exa/lib/three.min",
-	    "nbextensions/exa/lib/TrackballControls",
-	    "nbextensions/exa/utility"
-	],
-	*/
-	//function(THREE, TrackballControls, utility) {
 	class App3D {
 	    /*"""
 	    App3D
@@ -44396,7 +44382,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        this.controls.staticMoving = true;
 	        this.controls.dynamicDampingFactor = 0.3;
 	        this.controls.keys = [65, 83, 68];
-	        this.controls.addEventListener('change', this.render.bind(this));
+	        this.controls.addEventListener("change", this.render.bind(this));
 	
 	        this.dlight0 = new THREE.DirectionalLight(0xFFFFFF, 0.3);
 	        this.dlight0.position.set(-100, -100, -100);
@@ -44525,17 +44511,17 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        });
 	        var xyz = utility.create_float_array_xyz(x, y, z);
 	        var n = Math.floor(xyz.length / 3);
-	        if (!colors.hasOwnProperty('length')) {
+	        if (!colors.hasOwnProperty("length")) {
 	            colors = utility.repeat_object(colors, n);
 	        };
-	        if (!radii.hasOwnProperty('length')) {
+	        if (!radii.hasOwnProperty("length")) {
 	            radii = utility.repeat_float(radii, n);
 	        };
 	        colors = this.flatten_color(colors);
 	        radii = new Float32Array(radii);
-	        geometry.addAttribute('position', new THREE.BufferAttribute(xyz, 3));
-	        geometry.addAttribute('color', new THREE.BufferAttribute(colors, 3));
-	        geometry.addAttribute('size', new THREE.BufferAttribute(radii, 1));
+	        geometry.addAttribute("position", new THREE.BufferAttribute(xyz, 3));
+	        geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3));
+	        geometry.addAttribute("size", new THREE.BufferAttribute(radii, 1));
 	        var points = new THREE.Points(geometry, material);
 	        this.scene.add(points);
 	        return [points];
@@ -44559,11 +44545,11 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	            spheres (list): List of THREE.Mesh objects
 	        */
 	        var n = 1;
-	        if (x.hasOwnProperty('length')) {
+	        if (x.hasOwnProperty("length")) {
 	            n = x.length;
-	        } else if (y.hasOwnProperty('length')) {
+	        } else if (y.hasOwnProperty("length")) {
 	            n = y.length;
-	        } else if (z.hasOwnProperty('length')) {
+	        } else if (z.hasOwnProperty("length")) {
 	            n = z.length;
 	        };
 	        if (colors === undefined) {
@@ -44572,10 +44558,10 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        if (radii == undefined) {
 	            radii = 1;
 	        }
-	        if (!colors.hasOwnProperty('length')) {
+	        if (!colors.hasOwnProperty("length")) {
 	            colors = utility.repeat_object(colors, n);
 	        };
-	        if (!radii.hasOwnProperty('length')) {
+	        if (!radii.hasOwnProperty("length")) {
 	            radii = utility.repeat_float(radii, n);
 	        };
 	        var geometries = {};
@@ -44750,12 +44736,12 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        Set the camera in the default position and have it look at the origin.
 	
 	        Args:
-	            kwargs: {'x': x, 'y': y, ..., 'ox': ox, ...}
+	            kwargs: {"x": x, "y": y, ..., "ox": ox, ...}
 	        */
 	        if (kwargs === undefined) {
 	            kwargs = {};
 	        };
-	        for (var key of ['x', 'y', 'z']) {
+	        for (var key of ["x", "y", "z"]) {
 	            if (!kwargs.hasOwnProperty(key)) {
 	                kwargs[key] = 60.0;
 	            } else {
@@ -44764,7 +44750,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                };
 	            };
 	        };
-	        for (var key of ['rx', 'ry', 'rz']) {
+	        for (var key of ["rx", "ry", "rz"]) {
 	            if (!kwargs.hasOwnProperty(key)) {
 	                kwargs[key] = 0.5;
 	            } else {
@@ -44773,7 +44759,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                };
 	            };
 	        };
-	        for (var key of ['ox', 'oy', 'oz']) {
+	        for (var key of ["ox", "oy", "oz"]) {
 	            if (!kwargs.hasOwnProperty(key)) {
 	                kwargs[key] = 0.0;
 	            } else {
@@ -44783,12 +44769,12 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	            };
 	        };
 	
-	        var x = kwargs['x'] + kwargs['rx'];
-	        var y = kwargs['y'] + kwargs['ry'];
-	        var z = kwargs['z'] + kwargs['rz'];
-	        var ox = kwargs['ox'];
-	        var oy = kwargs['oy'];
-	        var oz = kwargs['oz'];
+	        var x = kwargs["x"] + kwargs["rx"];
+	        var y = kwargs["y"] + kwargs["ry"];
+	        var z = kwargs["z"] + kwargs["rz"];
+	        var ox = kwargs["ox"];
+	        var oy = kwargs["oy"];
+	        var oz = kwargs["oz"];
 	        this.camera.position.set(x, y, z);
 	        this.target = new THREE.Vector3(ox, oy, oz);
 	        this.camera.lookAt(this.target);
@@ -44808,7 +44794,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	            rz = 2.0;
 	        }
 	        var position;
-	        if (mesh.geometry.type === 'BufferGeometry') {
+	        if (mesh.geometry.type === "BufferGeometry") {
 	            position = mesh.geometry.attributes.position.array;
 	        } else {
 	            var n = mesh.geometry.vertices.length;
@@ -44839,8 +44825,8 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        xyz.y += ry;
 	        xyz.z *= 1.2;
 	        xyz.z += rz;
-	        var kwargs = {'x': xyz.x, 'y': xyz.y, 'z': xyz.z,
-	                      'ox': oxyz[0], 'oy': oxyz[1], 'oz': oxyz[2]};
+	        var kwargs = {"x": xyz.x, "y": xyz.y, "z": xyz.z,
+	                      "ox": oxyz[0], "oy": oxyz[1], "oz": oxyz[2]};
 	        this.set_camera(kwargs);
 	    };
 	
@@ -44858,8 +44844,8 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        max.x *= 1.2;
 	        max.y *= 1.2;
 	        max.z *= 1.2;
-	        var kwargs = {'x': max.x, 'y': max.y, 'z': max.z,
-	                      'ox': ox, 'oy': oy, 'oz': oz};
+	        var kwargs = {"x": max.x, "y": max.y, "z": max.z,
+	                      "ox": ox, "oy": oy, "oz": oz};
 	        this.set_camera(kwargs);
 	    };
 	
@@ -44877,21 +44863,21 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	            isovalue = 0;
 	        };
 	        if (algorithm === undefined) {
-	            algorithm = 'mc';
+	            algorithm = "mc";
 	        };
 	        if (sides === undefined) {
 	            sides = 1;
 	        };
 	
-	        if (algorithm == 'mc' && sides == 1) {
+	        if (algorithm == "mc" && sides == 1) {
 	            var field_mesh = this.march_cubes1(field, isovalue);
 	            //this.scene.add(field_mesh);
 	            return field_mesh;
-	        } else if (algorithm == 'mc' && sides == 2) {
+	        } else if (algorithm == "mc" && sides == 2) {
 	            var field_meshes = this.march_cubes2(field, isovalue);
 	            return field_meshes;
 	        } else {
-	            console.log('NotImplementedError');
+	            console.log("NotImplementedError");
 	        };
 	    };
 	
@@ -44961,7 +44947,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        See Also:
 	            **field.js**
 	        */
-	        console.log('march_cubes1');
+	        console.log("march_cubes1");
 	        console.log(Math.min(...field.values));
 	        console.log(Math.max(...field.values));
 	        var nx = field.nx;
@@ -45053,7 +45039,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        ------------------------
 	        Similar to the above but for finding positive and negative surfaces.
 	        */
-	        console.log('march_cubes2');
+	        console.log("march_cubes2");
 	        var nx = field.nx;
 	        var ny = field.ny;
 	        var nz = field.nz;
@@ -45560,8 +45546,6 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	module.exports = {
 	    "App3D" : App3D
 	};
-	//});
-	//});
 
 
 /***/ },
@@ -86786,9 +86770,9 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 
 /***/ },
 /* 9 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;// Copyright (c) 2015-2016, Exa Analytics Development Team
+	// Copyright (c) 2015-2016, Exa Analytics Development Team
 	// Distributed under the terms of the Apache License 2.0
 	/*"""
 	================
@@ -86796,125 +86780,118 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	================
 	Helper functions used by custom notebook JS.
 	*/
-	'use strict';
+	"use strict";
 	
-	/*require.config({
-	    shim: {
-	    },
-	});*/
+	var flatten_to_array = function(obj) {
+	    /*"""
+	    flatten_to_array
+	    ==================
+	    Flattens an array-like object into a 1-D Float32Array object.
 	
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
-	    var flatten_to_array = function(obj) {
-	        /*"""
-	        flatten_to_array
-	        ==================
-	        Flattens an array-like object into a 1-D Float32Array object.
-	
-	        Args:
-	            obj (object): Array like object to be flattened
-	        */
-	        var n = obj.length;
-	        var m = obj[0].length;
-	        var flat = new Float32Array(n * m);
-	        var h = 0;
-	        for (var i=0; i<n; i++) {
-	            for (var j=0; j<m; j++) {
-	                flat[h] = obj[i][j];
-	                h += 1;
-	            };
+	    Args:
+	        obj (object): Array like object to be flattened
+	    */
+	    var n = obj.length;
+	    var m = obj[0].length;
+	    var flat = new Float32Array(n * m);
+	    var h = 0;
+	    for (var i=0; i<n; i++) {
+	        for (var j=0; j<m; j++) {
+	            flat[h] = obj[i][j];
+	            h += 1;
 	        };
-	        return flat;
 	    };
+	    return flat;
+	};
 	
-	    var create_float_array_xyz = function(x, y, z) {
-	        /*"""
-	        create_float_array_xyz
-	        ==========================
-	        Create a 1D array from 3D data.
-	        */
-	        var nx = x.length || 1;
-	        var ny = y.length || 1;
-	        var nz = z.length || 1;
-	        var n = Math.max(nx, ny, nz);
-	        if (nx == 1) {
-	            x = repeat_float(x, n);
-	        };
-	        if (ny == 1) {
-	            y = repeat_float(y, n);
-	        };
-	        if (nz == 1) {
-	            z = repeat_float(z, n);
-	        };
-	        var xyz = new Float32Array(n * 3)
-	        for (var i=0, i3=0; i<n; i++, i3+=3) {
-	            xyz[i3] = x[i];
-	            xyz[i3+1] = y[i];
-	            xyz[i3+2] = z[i];
-	        };
-	        return xyz;
+	var create_float_array_xyz = function(x, y, z) {
+	    /*"""
+	    create_float_array_xyz
+	    ==========================
+	    Create a 1D array from 3D data.
+	    */
+	    var nx = x.length || 1;
+	    var ny = y.length || 1;
+	    var nz = z.length || 1;
+	    var n = Math.max(nx, ny, nz);
+	    if (nx == 1) {
+	        x = repeat_float(x, n);
 	    };
+	    if (ny == 1) {
+	        y = repeat_float(y, n);
+	    };
+	    if (nz == 1) {
+	        z = repeat_float(z, n);
+	    };
+	    var xyz = new Float32Array(n * 3)
+	    for (var i=0, i3=0; i<n; i++, i3+=3) {
+	        xyz[i3] = x[i];
+	        xyz[i3+1] = y[i];
+	        xyz[i3+2] = z[i];
+	    };
+	    return xyz;
+	};
 	
-	    var repeat_float = function(value, n) {
-	        /*"""
-	        repeat_float
-	        ==================
-	        Repeat a value n times.
-	        */
-	        var array = new Float32Array(n);
-	        for (var i=0; i<n; i++) {
-	            array[i] = value
-	        };
-	        return array;
+	var repeat_float = function(value, n) {
+	    /*"""
+	    repeat_float
+	    ==================
+	    Repeat a value n times.
+	    */
+	    var array = new Float32Array(n);
+	    for (var i=0; i<n; i++) {
+	        array[i] = value
 	    };
+	    return array;
+	};
 	
-	    var repeat_int = function(value, n) {
-	        /*"""
-	        repeat_float
-	        ==================
-	        Repeat a value n times.
-	        */
-	        var array = new Int32Array(n);
-	        for (var i=0; i<n; i++) {
-	            array[i] = value
-	        };
-	        return array;
+	var repeat_int = function(value, n) {
+	    /*"""
+	    repeat_float
+	    ==================
+	    Repeat a value n times.
+	    */
+	    var array = new Int32Array(n);
+	    for (var i=0; i<n; i++) {
+	        array[i] = value
 	    };
+	    return array;
+	};
 	
-	    var repeat_object = function(value, n) {
-	        /*"""
-	        repeat_object
-	        ==============
-	        Repeat an object n time.
-	        */
-	        var obj = [];
-	        for (var i=0; i<n; i++) {
-	            obj.push(value);
-	        };
-	        return obj;
+	var repeat_object = function(value, n) {
+	    /*"""
+	    repeat_object
+	    ==============
+	    Repeat an object n time.
+	    */
+	    var obj = [];
+	    for (var i=0; i<n; i++) {
+	        obj.push(value);
 	    };
+	    return obj;
+	};
 	
-	    var mapper = function(indices, map) {
-	        /*"""
-	        mapper
-	        --------
-	        */
-	        var n = indices.length;
-	        var mapped = [];
-	        for (var i=0; i<n; i++) {
-	            mapped.push(map[indices[i]])
-	        };
-	        return mapped;
+	var mapper = function(indices, map) {
+	    /*"""
+	    mapper
+	    --------
+	    */
+	    var n = indices.length;
+	    var mapped = [];
+	    for (var i=0; i<n; i++) {
+	        mapped.push(map[indices[i]])
 	    };
+	    return mapped;
+	};
 	
-	    return {
-	        'flatten_to_array': flatten_to_array,
-	        'create_float_array_xyz': create_float_array_xyz,
-	        'repeat_float': repeat_float,
-	        'repeat_int': repeat_int,
-	        'repeat_object': repeat_object,
-	        'mapper': mapper,
-	    };
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	module.exports = {
+	    "flatten_to_array": flatten_to_array,
+	    "create_float_array_xyz": create_float_array_xyz,
+	    "repeat_float": repeat_float,
+	    "repeat_int": repeat_int,
+	    "repeat_object": repeat_object,
+	    "mapper": mapper,
+	};
 
 
 /***/ },
@@ -86929,24 +86906,10 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	============
 	Basic gui for container views.
 	*/
-	'use strict';
+	"use strict";
 	var dat = __webpack_require__(11);
 	
-	/*
-	require.config({
-	    shim: {
-	        "nbextensions/exa/lib/dat.gui.min": {
-	            exports: 'dat'
-	        },
-	    },
-	});
-	*/
-	/*
-	define([
-	    "nbextensions/exa/lib/dat.gui.min",
-	],
-	*/
-	//function(dat) {
+	
 	class ContainerGUI extends dat.GUI {
 	    /*"""
 	    ContainerGUI
@@ -86954,7 +86917,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	    */
 	    constructor(width) {
 	        super({autoPlace: false, width: width});
-	        this.custom_css = document.createElement('style');
+	        this.custom_css = document.createElement("style");
 	        this.custom_css.innerHTML = this.gui_style;
 	    };
 	};
@@ -91511,9 +91474,9 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 
 /***/ },
 /* 14 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;// Copyright (c) 2015-2016, Exa Analytics Development Team
+	// Copyright (c) 2015-2016, Exa Analytics Development Team
 	// Distributed under the terms of the Apache License 2.0
 	/*"""
 	=============
@@ -91521,233 +91484,229 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	=============
 	Numerical utilities
 	*/
-	'use strict';
+	"use strict";
 	
+	var hstack = function(arrays) {
+	    /*"""
+	    hstack
+	    ===========
+	    Horizontally concatenate a list of arrays.
+	    */
+	    console.log("NotImplementedError")
+	};
 	
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
+	var minspace = function(min, space, n) {
+	    /*"""
+	    minspace
+	    ================
+	    Creates a linearly spaced array with knowledge of the length,
+	    origin and spacing of the array.
 	
-	    var hstack = function(arrays) {
-	        /*"""
-	        hstack
-	        ===========
-	        Horizontally concatenate a list of arrays.
-	        */
-	        console.log('NotImplementedError')
+	    Args:
+	        min (number): origin
+	        space (number): spacing
+	        n (number): length of array
+	
+	    */
+	    var n1 = n - 1;
+	    var fol = min;
+	    var arr = [min];
+	    for (var i = 0; i < n1; i++) {
+	        fol += space;
+	        arr.push(fol);
 	    };
+	    return new Float32Array(arr);
+	};
 	
-	    var minspace = function(min, space, n) {
-	        /*"""
-	        minspace
-	        ================
-	        Creates a linearly spaced array with knowledge of the length,
-	        origin and spacing of the array.
+	var linspace = function(min, max, n) {
+	    /*"""
+	    linspace
+	    ================
+	    Create a linearly spaced array of the form [min, max] with n linearly
+	    spaced elements.
 	
-	        Args:
-	            min (number): origin
-	            space (number): spacing
-	            n (number): length of array
+	    Args:
+	        min (number): Starting number
+	        max (number): Ending number (inclusive)
+	        n (number): Number of elements
 	
-	        */
-	        var n1 = n - 1;
-	        var fol = min;
-	        var arr = [min];
-	        for (var i = 0; i < n1; i++) {
-	            fol += space;
-	            arr.push(fol);
-	        };
-	        return new Float32Array(arr);
+	    Returns:
+	        array (array): Array of values
+	    */
+	    var n1 = n - 1;
+	    var step = (max - min) / n1;
+	    var array = [min];
+	    for (var i=0; i<n1; i++) {
+	        min += step;
+	        array.push(min);
 	    };
+	    return new Float32Array(array);
+	};
 	
-	    var linspace = function(min, max, n) {
-	        /*"""
-	        linspace
-	        ================
-	        Create a linearly spaced array of the form [min, max] with n linearly
-	        spaced elements.
-	
-	        Args:
-	            min (number): Starting number
-	            max (number): Ending number (inclusive)
-	            n (number): Number of elements
-	
-	        Returns:
-	            array (array): Array of values
-	        */
-	        var n1 = n - 1;
-	        var step = (max - min) / n1;
-	        var array = [min];
-	        for (var i=0; i<n1; i++) {
-	            min += step;
-	            array.push(min);
-	        };
-	        return new Float32Array(array);
+	var arange = function(min, max, step) {
+	    /*"""
+	    arange
+	    ================
+	    */
+	    var array = [min];
+	    while (min < max) {
+	        min += step;
+	        array.push(min);
 	    };
+	    return new Float32Array(array);
+	};
 	
-	    var arange = function(min, max, step) {
-	        /*"""
-	        arange
-	        ================
-	        */
-	        var array = [min];
-	        while (min < max) {
-	            min += step;
-	            array.push(min);
-	        };
-	        return new Float32Array(array);
-	    };
-	
-	    var meshgrid3d = function(x, y, z) {
-	        /*"""
-	        meshgrid3d
-	        ============
-	        From three discrete dimensions, create a set of
-	        3d gridpoints
-	        */
-	        var nx = x.length;
-	        var ny = y.length;
-	        var nz = z.length;
-	        var n = nx * ny * nz;
-	        var xx = new Float32Array(n);
-	        var yy = new Float32Array(n);
-	        var zz = new Float32Array(n);
-	        var h = 0;
-	        for (var i of x) {
-	            for (var j of y) {
-	                for (var k of z) {
-	                    xx[h] = i;
-	                    yy[h] = j;
-	                    zz[h] = k;
-	                    h += 1;
-	                };
+	var meshgrid3d = function(x, y, z) {
+	    /*"""
+	    meshgrid3d
+	    ============
+	    From three discrete dimensions, create a set of
+	    3d gridpoints
+	    */
+	    var nx = x.length;
+	    var ny = y.length;
+	    var nz = z.length;
+	    var n = nx * ny * nz;
+	    var xx = new Float32Array(n);
+	    var yy = new Float32Array(n);
+	    var zz = new Float32Array(n);
+	    var h = 0;
+	    for (var i of x) {
+	        for (var j of y) {
+	            for (var k of z) {
+	                xx[h] = i;
+	                yy[h] = j;
+	                zz[h] = k;
+	                h += 1;
 	            };
 	        };
-	        return {x: xx, y: yy, z: zz};
 	    };
+	    return {x: xx, y: yy, z: zz};
+	};
 	
-	    var ellipsoid = function(x, y, z, a, b, c) {
-	        /*"""
-	        ellipsoid
-	        ===========
-	        */
-	        if (a === undefined) {
-	            a = 2.0;
-	        };
-	        if (b === undefined) {
-	            b = 1.75;
-	        };
-	        if (c === undefined) {
-	            c = 1.5;
-	        };
-	        return 2 * ((x * x) / (a * a) + (y * y) / (b * b) + (z * z) / (c * c))
+	var ellipsoid = function(x, y, z, a, b, c) {
+	    /*"""
+	    ellipsoid
+	    ===========
+	    */
+	    if (a === undefined) {
+	        a = 2.0;
 	    };
+	    if (b === undefined) {
+	        b = 1.75;
+	    };
+	    if (c === undefined) {
+	        c = 1.5;
+	    };
+	    return 2 * ((x * x) / (a * a) + (y * y) / (b * b) + (z * z) / (c * c))
+	};
 	
-	    var sphere = function(x, y, z) {
-	        /*"""
-	        sphere
-	        ================
-	        */
-	        return (x * x + y * y + z * z) //* Math.exp( -0.5 * (x * x + y * y + z * z));
-	    }
+	var sphere = function(x, y, z) {
+	    /*"""
+	    sphere
+	    ================
+	    */
+	    return (x * x + y * y + z * z) //* Math.exp( -0.5 * (x * x + y * y + z * z));
+	}
 	
-	    var torus = function(x, y, z, c) {
-	        /*"""
-	        torus
-	        ================
-	        */
-	        if (c === undefined) {
-	            c = 1.0;
-	        };
-	        return  Math.pow(c - Math.sqrt(x * x + y * y), 2) + z * z;
-	    }
+	var torus = function(x, y, z, c) {
+	    /*"""
+	    torus
+	    ================
+	    */
+	    if (c === undefined) {
+	        c = 1.0;
+	    };
+	    return  Math.pow(c - Math.sqrt(x * x + y * y), 2) + z * z;
+	}
 	
-	    var compute_field = function(xs, ys, zs, n, func) {
-	        /*"""
-	        compute_field
-	        ==============
-	        */
-	        var values = new Float32Array(n);
-	        var norm = 0;
-	        var dv = (xs[1] - xs[0]) * (ys[1] - ys[0]) * (zs[1] - zs[0]);
-	        var i = 0;
-	        for (var x of xs) {
-	            for (var y of ys) {
-	                for (var z of zs) {
-	                    var tmp = func(x, y, z);
-	                    values[i] = tmp;
-	                    norm += (tmp * tmp * dv);
-	                    i += 1;
-	                };
+	var compute_field = function(xs, ys, zs, n, func) {
+	    /*"""
+	    compute_field
+	    ==============
+	    */
+	    var values = new Float32Array(n);
+	    var norm = 0;
+	    var dv = (xs[1] - xs[0]) * (ys[1] - ys[0]) * (zs[1] - zs[0]);
+	    var i = 0;
+	    for (var x of xs) {
+	        for (var y of ys) {
+	            for (var z of zs) {
+	                var tmp = func(x, y, z);
+	                values[i] = tmp;
+	                norm += (tmp * tmp * dv);
+	                i += 1;
 	            };
 	        };
-	        norm = 1 / Math.pow(norm, (1/2));
-	        return {'values': values, 'norm': norm}
 	    };
+	    norm = 1 / Math.pow(norm, (1/2));
+	    return {"values": values, "norm": norm}
+	};
 	
-	    var gen_array = function(nr, or, dx, dy, dz) {
-	        /*"""
-	        gen_array
-	        =============
-	        Generates discrete spatial points in space. Used to generate
-	        x, y, z spatial values for the cube field. In most cases, for the x
-	        basis vector, dy and dz are zero ("cube-like").
-	        */
-	        var r = new Float32Array(nr);
-	        r[0] = or;
-	        for (var i=1; i<nr; i++) {
-	            r[i] = r[i-1] + dx + dy + dz;
+	var gen_array = function(nr, or, dx, dy, dz) {
+	    /*"""
+	    gen_array
+	    =============
+	    Generates discrete spatial points in space. Used to generate
+	    x, y, z spatial values for the cube field. In most cases, for the x
+	    basis vector, dy and dz are zero ("cube-like").
+	    */
+	    var r = new Float32Array(nr);
+	    r[0] = or;
+	    for (var i=1; i<nr; i++) {
+	        r[i] = r[i-1] + dx + dy + dz;
+	    };
+	    return r;
+	};
+	
+	var normalize_gaussian = function(alpha, L) {
+	    /*"""
+	    normalize_gaussian
+	    ===================
+	    Given an exponent and a pre-exponential power, return the
+	    normalization constant of a given gaussian type function.
+	    */
+	    var prefac = Math.pow((2 / Math.PI), 0.75);
+	    var numer = Math.pow(2, L) * Math.pow(alpha, ((L + 1.5) / 2));
+	    var denom = Math.pow(this.factorial2(2 * L - 1), 0.5);
+	    return prefac * numer / denom;
+	};
+	
+	var factorial2 = function(n) {
+	    /*"""
+	    factorial2
+	    ============
+	    Returns the factorial2 of an integer.
+	    */
+	    if (n < -1) {
+	        return 0;
+	    } else if (n < 2) {
+	        return 1;
+	    } else {
+	        var prod = 1;
+	        while (n > 0) {
+	            prod *= n;
+	            n -= 2;
 	        };
-	        return r;
+	        return prod;
 	    };
-	
-	    var normalize_gaussian = function(alpha, L) {
-	        /*"""
-	        normalize_gaussian
-	        ===================
-	        Given an exponent and a pre-exponential power, return the
-	        normalization constant of a given gaussian type function.
-	        */
-	        var prefac = Math.pow((2 / Math.PI), 0.75);
-	        var numer = Math.pow(2, L) * Math.pow(alpha, ((L + 1.5) / 2));
-	        var denom = Math.pow(this.factorial2(2 * L - 1), 0.5);
-	        return prefac * numer / denom;
-	    };
-	
-	    var factorial2 = function(n) {
-	        /*"""
-	        factorial2
-	        ============
-	        Returns the factorial2 of an integer.
-	        */
-	        if (n < -1) {
-	            return 0;
-	        } else if (n < 2) {
-	            return 1;
-	        } else {
-	            var prod = 1;
-	            while (n > 0) {
-	                prod *= n;
-	                n -= 2;
-	            };
-	            return prod;
-	        };
-	    };
+	};
 	
 	
-	    return {
-	        meshgrid3d: meshgrid3d,
-	        linspace: linspace,
-	        minspace: minspace,
-	        arange: arange,
-	        sphere: sphere,
-	        ellipsoid: ellipsoid,
-	        torus: torus,
-	        gen_array: gen_array,
-	        compute_field: compute_field,
-	        factorial2: factorial2,
-	        normalize_gaussian: normalize_gaussian,
-	        function_list_3d: [null, 'sphere', 'torus', 'ellipsoid'],
-	    };
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+	module.exports = {
+	        "meshgrid3d": meshgrid3d,
+	        "linspace": linspace,
+	        "minspace": minspace,
+	        "arange": arange,
+	        "sphere": sphere,
+	        "ellipsoid": ellipsoid,
+	        "torus": torus,
+	        "gen_array": gen_array,
+	        "compute_field": compute_field,
+	        "factorial2": factorial2,
+	        "normalize_gaussian": normalize_gaussian,
+	        "function_list_3d": [null, "sphere", "torus", "ellipsoid"],
+	}
 
 
 /***/ },
@@ -91903,44 +91862,13 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 /* 16 */
 /***/ function(module, exports) {
 
-	// Copyright (c) 2015-2016, Exa Analytics Development Team
-	// Distributed under the terms of the Apache License 2.0
-	/*""""
-	================
-	info.js
-	================
-	The default container view; displays container information (number of data
-	objects, size, and relationships) in a dynamic fashion.
-	*/
-	/*
-	'use strict';
-	
-	
-	require.config({
-	    shim: {
-	    },
-	});
-	
-	
-	define([], function() {
-	    class InfoApp {};
-	
-	    return InfoApp;
-	});
-	*/
-
-
-/***/ },
-/* 17 */
-/***/ function(module, exports) {
-
 	/*"""
 	========================
 	marchingsquares.js
 	========================
 	
 	*/
-	'use strict';
+	"use strict";
 	
 	var Contour = function(data, dims, orig, scale, val, ncont, contlims, axis) {
 	
@@ -91975,16 +91903,16 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        var x = [];
 	        var y = [];
 	        var dat = [];
-	        // Default to the 'z' axis
+	        // Default to the "z" axis
 	        var xidx = 0;
 	        var yidx = 1;
 	        var plidx = 2;
 	
-	        if (axis == 'x') {
+	        if (axis == "x") {
 	            xidx = 0;
 	            yidx = 2;
 	            plidx = 1;
-	        } else if (axis == 'y') {
+	        } else if (axis == "y") {
 	            xidx = 1;
 	            yidx = 2;
 	            plidx = 0;
@@ -92016,7 +91944,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	            };
 	        };
 	
-	        if (axis == 'z') {
+	        if (axis == "z") {
 	            for(var nx = 0; nx < dims[0]; nx++) {
 	                var tmp = [];
 	                for(var ny = 0; ny < dims[1]; ny++) {
@@ -92024,7 +91952,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                };
 	                dat.push(tmp);
 	            };
-	        } else if (axis == 'x') {
+	        } else if (axis == "x") {
 	            for(var nx = 0; nx < dims[0]; nx++) {
 	                var tmp = [];
 	                for(var nz = 0; nz < dims[2]; nz++) {
@@ -92032,7 +91960,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                };
 	                dat.push(tmp);
 	            };
-	        } else if (axis == 'y') {
+	        } else if (axis == "y") {
 	            for(var ny = 0; ny < dims[1]; ny++) {
 	                var tmp = [];
 	                for(var nz = 0; nz < dims[2]; nz++) {
@@ -92041,7 +91969,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                dat.push(tmp);
 	            };
 	        };
-	        return {'dat': dat, 'x': x, 'y': y};
+	        return {"dat": dat, "x": x, "y": y};
 	    };
 	
 	    // Interpolate a value along the side of a square
@@ -92235,14 +92163,14 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	        };
 	    };
 	    // Default behavior of algorithm
-	    if (axis == 'z') {
+	    if (axis == "z") {
 	        return cverts;
 	    // cverts is populated assuming x, y correspond to x, y
 	    // dimensions in the cube file, but to avoid a double nested
 	    // if else inside the tight O(N^2) loop, just move around the
 	    // elements accordingly afterwards according to the axis of
 	    // interest
-	    } else if (axis == 'x') {
+	    } else if (axis == "x") {
 	        var rear = [];
 	        for(var c = 0; c < nc; c++) {
 	            rear.push([]);
@@ -92251,7 +92179,7 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	                rear[c].push([cverts[c][v][0], val, cverts[c][v][1]]);
 	            };
 	        };
-	    } else if (axis == 'y') {
+	    } else if (axis == "y") {
 	        var rear = [];
 	        for(var c = 0; c < nc; c++) {
 	            rear.push([]);
@@ -92263,10 +92191,14 @@ define(["jupyter-js-widgets"], function(__WEBPACK_EXTERNAL_MODULE_3__) { return 
 	    };
 	    return rear;
 	};
+	
+	module.exports = {
+	    "Contour": Contour
+	}
 
 
 /***/ },
-/* 18 */
+/* 17 */
 /***/ function(module, exports) {
 
 	module.exports = {

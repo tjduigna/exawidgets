@@ -19,13 +19,17 @@ display_params = {
     'filename': '',
 }
 
-class Widget(DOMWidget):
+class BaseWidget(DOMWidget):
     """
     Base widget class for Jupyter notebook widgets provided by exawidgets.
     Standardizes bidirectional communication handling between notebook
     extensions' frontend JavaScript and backend Python.
     """
-    width = Integer(850).tag(sync=True)
+    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_name = Unicode("BaseModel").tag(sync=True)
+    _view_name = Unicode("BaseView").tag(sync=True)
+    width = Integer(800).tag(sync=True)
     height = Integer(500).tag(sync=True)
     fps = Integer(24).tag(sync=True)
 
@@ -47,7 +51,7 @@ class Widget(DOMWidget):
         self._ipython_display_()
 
 
-class ContainerWidget(Widget):
+class ContainerWidget(BaseWidget):
     """
     Jupyter notebook widget representation of an exa-based Container. The widget
     accepts a (reference to a) container and parameters and creates a suitable
@@ -57,11 +61,14 @@ class ContainerWidget(Widget):
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_name = Unicode("ContainerModel").tag(sync=True)
     _view_name = Unicode("ContainerView").tag(sync=True)
-    gui_width = Integer(250).tag(sync=True)
+    width = Unicode("800").tag(sync=True)
+    height = Unicode("500").tag(sync=True)
+    gui_width = Unicode("250").tag(sync=True)
 
     def __init__(self, container=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.container = container
         if container is None:
-            self.add_traits(test=Bool(True).tag(sync=True))
+            test = Bool(True).tag(sync=True)
+            self.add_traits(test=test)
         self.params = display_params
