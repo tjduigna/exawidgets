@@ -8,37 +8,6 @@ Numerical utilities
 */
 "use strict";
 
-var hstack = function(arrays) {
-    /*"""
-    hstack
-    ===========
-    Horizontally concatenate a list of arrays.
-    */
-    console.log("NotImplementedError")
-};
-
-var minspace = function(min, space, n) {
-    /*"""
-    minspace
-    ================
-    Creates a linearly spaced array with knowledge of the length,
-    origin and spacing of the array.
-
-    Args:
-        min (number): origin
-        space (number): spacing
-        n (number): length of array
-
-    */
-    var n1 = n - 1;
-    var fol = min;
-    var arr = [min];
-    for (var i = 0; i < n1; i++) {
-        fol += space;
-        arr.push(fol);
-    };
-    return new Float32Array(arr);
-};
 
 var linspace = function(min, max, n) {
     /*"""
@@ -218,7 +187,6 @@ var factorial2 = function(n) {
 module.exports = {
         "meshgrid3d": meshgrid3d,
         "linspace": linspace,
-        "minspace": minspace,
         "arange": arange,
         "sphere": sphere,
         "ellipsoid": ellipsoid,

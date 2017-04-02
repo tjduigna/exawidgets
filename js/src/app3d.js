@@ -608,9 +608,7 @@ class App3D {
         See Also:
             **field.js**
         */
-        console.log("march_cubes1");
-        console.log(Math.min(...field.values));
-        console.log(Math.max(...field.values));
+        console.log("mc1");
         var nx = field.nx;
         var ny = field.ny;
         var nz = field.nz;
@@ -683,14 +681,14 @@ class App3D {
         geometry.mergeVertices();
         geometry.computeFaceNormals();
         geometry.computeVertexNormals();
-        var material = new THREE.MeshLambertMaterial({color:0x303030});
-        var mat = new THREE.MeshBasicMaterial({color: 0x909090, wireframe: true});
+        var material = new THREE.MeshLambertMaterial({color:0x606060,
+                                                      side: THREE.DoubleSide});
+        var mat = new THREE.MeshBasicMaterial({color: 0x909090,
+                                               wireframe: true});
         var frame = new THREE.Mesh(geometry, mat);
         var filled = new THREE.Mesh(geometry, material);
         this.scene.add(filled);
         this.scene.add(frame);
-        console.log(frame.geometry.vertices.length);
-        console.log(frame.geometry.faces.length);
         return [filled, frame];
     };
 
@@ -700,7 +698,7 @@ class App3D {
         ------------------------
         Similar to the above but for finding positive and negative surfaces.
         */
-        console.log("march_cubes2");
+        console.log("mc2");
         var nx = field.nx;
         var ny = field.ny;
         var nz = field.nz;
@@ -820,21 +818,13 @@ class App3D {
         var p_material = new THREE.MeshPhongMaterial({
             color: 0x003399,
             specular: 0x003399,
-            transparent: true,
-            opacity: 0.7,
-            shininess: 30,
-            side: THREE.FrontSide
+            shininess: 15
         });
         var n_material = new THREE.MeshPhongMaterial({
             color: 0xFF9900,
             specular: 0xFF9900,
-            transparent: true,
-            opacity: 0.7,
-            shininess: 30,
-            side: THREE.BackSide
+            shininess: 15
         });
-        var material1 = new THREE.MeshBasicMaterial({color: 0x909090, wireframe: true});
-        var material2 = new THREE.MeshBasicMaterial({color: 0x909090, wireframe: true});
         var mesh1 = new THREE.Mesh(p_geometry, p_material);
         var mesh2 = new THREE.Mesh(n_geometry, n_material);
         this.scene.add(mesh1);

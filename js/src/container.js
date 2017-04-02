@@ -1,19 +1,17 @@
-// Copyright (c) 2015-2016, Exa Analytics Development Team
+// Copyright (c) 2015-2017, Exa Analytics Development Team
 // Distributed under the terms of the Apache License 2.0
 /*"""
 =================
 container.js
 =================
-JavaScript "frontend" counterpart of exa's Container object for use within
+JavaScript "frontend" complement of exawidget's Container for use within
 the Jupyter notebook interface. This "module" standardizes bidirectional
 communication logic for all container widget views.
 
 The structure of the frontend is to generate an HTML widget ("container" - see
 create_container) and then populate its canvas with an application ("app")
 appropriate to the type of container. If the (backend) container is empty, then
-populate the HTML widget with the test application. If the container is not
-empty but doesn't have a dedicated application, the info application (info.js)
-is used.
+populate the HTML widget with the test application.
 */
 "use strict";
 var widgets = require("jupyter-js-widgets");
@@ -46,20 +44,8 @@ class ContainerModel extends BaseModel {
             _model_name: "ContainerModel",
             _view_name: "ContainerView",
             gui_width: 250,
-            width: 800,
-            height: 500
         });
     }
-/*
-    get serializers() {
-      return _.extend({
-            scene: { deserialize: widgets.unpack_models },
-            camera: { deserialize: widgets.unpack_models },
-            controls: { deserialize: widgets.unpack_models },
-            effect: { deserialize: widgets.unpack_models }
-        }, widgets.DOMWidgetModel.serializers)
-    }
-*/
 }
 
 class ContainerView extends BaseView {
@@ -101,7 +87,6 @@ class ContainerView extends BaseView {
         Container view classes that extend this class can overwrite this
         method to customize the behavior of their data specific view.
         */
-	      console.log("WE ARE CONTAINER");
         this.if_empty();
     };
 
