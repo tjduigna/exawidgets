@@ -6,7 +6,6 @@ Version
 #############
 
 .. code-block:: Python
-    >>> exawidgets.__version__
     >>> help(exawidgets)
     >>> exa._version.version_info
 """
