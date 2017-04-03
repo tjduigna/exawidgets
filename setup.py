@@ -125,7 +125,7 @@ setup_args = {
     'version': version,
     'description': "A bridge between the Jupyter widgets framework and third-party JavaScript libraries",
     'long_description': long_description,
-    'include_package_data': True
+    'include_package_data': True,
     'data_files': [
         ("share/jupyter/nbextensions/jupyter-exawidgets", [
             "build/widgets/extension.js",
