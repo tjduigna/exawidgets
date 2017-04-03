@@ -86,7 +86,7 @@ class NPM(Command):
 
     def has_npm(self):
         try:
-            check_call(["npm", "--version"], **shell)
+            check_call(["npm", "--version"], **call_kwargs)
             return True
         except Exception:
             return False
@@ -106,7 +106,7 @@ class NPM(Command):
 
         if self.should_run_npm_install():
             log.info("Installing build dependencies with npm. This may take a while...")
-            check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr, **shell)
+            check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr, **call_kwargs)
             os.utime(self.node_modules, None)
 
         for t in self.targets:
