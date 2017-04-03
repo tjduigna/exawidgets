@@ -23,4 +23,3 @@ after_success:
   - codecov
   - coveralls
   - python-codacy-coverage -r coverage.xml
-  - travis-sphinx -n deploy
