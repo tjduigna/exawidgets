@@ -15,7 +15,8 @@ before_install:
   - conda update --yes conda
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION
-  - conda install --yes -c conda-forge nodejs python-coveralls ipywidgets
+  - conda install --yes `cat requirements.txt`
+  - conda install --yes -c conda-forge nodejs python-coveralls
   - pip install travis-sphinx codacy-coverage codecov
   - python setup.py install
 script:

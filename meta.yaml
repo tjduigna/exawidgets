@@ -13,10 +13,12 @@ requirements:
   build:
     - python x.x
     - ipywidgets
+    - nose
 
   run:
     - python
     - ipywidgets
+    - nose
 
 about:
   home: https://exa-analytics.github.io
