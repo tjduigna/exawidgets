@@ -6,4 +6,3 @@ sphinx
 nose
 six
 sphinx_rtd_theme
-pandoc
