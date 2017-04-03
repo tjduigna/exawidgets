@@ -20,8 +20,6 @@ requirements:
         - nose
         - six
         - sphinx_rtd_theme
-        - pandoc
-        - nbsphinx
 
     run:
         - python
@@ -33,9 +31,6 @@ requirements:
         - nose
         - six
         - sphinx_rtd_theme
-        - pandoc
-        - nbsphinx
-
 
 about:
     home: https://exa-analytics.github.io
