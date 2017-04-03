@@ -22,7 +22,9 @@ install:
 script:
   - nosetests --with-coverage
   - coverage xml
+  - travis-sphinx -n build
 after_success:
   - codecov
   - coveralls
   - python-codacy-coverage -r coverage.xml
+  - travis-sphinx -n deploy
