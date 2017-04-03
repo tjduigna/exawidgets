@@ -97,7 +97,7 @@ class NPM(Command):
         return self.has_npm()
 
     def run(self):
-        has_npm_ = has_npm()
+        has_npm_ = self.has_npm()
         if not has_npm_:
             log.error("`npm` unavailable.  If you're running this command using sudo, make sure `npm` is available to sudo")
 
@@ -112,7 +112,7 @@ class NPM(Command):
         for t in self.targets:
             if not os.path.exists(t):
                 msg = "Missing file: %s" % t
-                if not has_npm:
+                if not has_npm_:
                     msg += r"\nnpm is required to build a development version of widgetsnbextension"
                 raise ValueError(msg)
 

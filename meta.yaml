@@ -1,44 +1,25 @@
 package:
-    name: exawidgets
-    version: "0.1.0"
+  name: exawidgets
+  version: "0.1.0"
 
 app:
-    entry: exawidgets
+  entry: exawidgets
 
 source:
-    git_rev: v0.1.0
-    git_url: https://github.com/exa-analytics/exawidgets.git
+  git_rev: v0.1.0
+  git_url: https://github.com/exa-analytics/exawidgets.git
 
 requirements:
-    build:
-        - python x.x
-        - jupyter
-        - notebook
-        - ipywidgets
-        - ipyparallel
-        - sphinx
-        - nose
-        - six
-        - sphinx_rtd_theme
-        - pandoc
-        - nbsphinx
+  build:
+    - python x.x
+    - ipywidgets
 
-    run:
-        - python
-        - jupyter
-        - notebook
-        - ipywidgets
-        - ipyparallel
-        - sphinx
-        - nose
-        - six
-        - sphinx_rtd_theme
-        - pandoc
-        - nbsphinx
-
+  run:
+    - python
+    - ipywidgets
 
 about:
-    home: https://exa-analytics.github.io
-    license: Apache 2.0
-    license_file: LICENSE
-    summary: A framework for data processing, analytics, and visualization.
+  home: https://exa-analytics.github.io
+  license: Apache 2.0
+  license_file: LICENSE
+  summary: A framework for data processing, analytics, and visualization.
