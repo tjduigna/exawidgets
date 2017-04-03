@@ -1,2 +1,2 @@
 # exawidgets
-An bridge between the Jupyter widgets framework and third-party JavaScript libraries
+A bridge between the Jupyter widgets framework and third-party JavaScript libraries
