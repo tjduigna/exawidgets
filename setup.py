@@ -16,7 +16,7 @@ import platform
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, "js")
 is_repo = os.path.exists(os.path.join(here, ".git"))
-call_kwargs = {'shell': True} if platform.system().lower() == 'windows' else {}
+call_kwargs = {'shell': True} if platform.system().lower() == 'windows' else {'shell': True}
 log.set_verbosity(log.DEBUG)
 log.info("setup.py entered")
 log.info("$PATH=%s" % os.environ['PATH'])
