@@ -11,7 +11,7 @@ and `ipywidgets`_ packages.
 .. _traitlets: https://traitlets.readthedocs.io/en/stable/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 """
-from ipywidgets import DOMWidget
+from ipywidgets import DOMWidget, Layout
 from traitlets import Unicode, Integer, Bool
 
 display_params = {
@@ -29,8 +29,8 @@ class BaseWidget(DOMWidget):
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_name = Unicode("BaseModel").tag(sync=True)
     _view_name = Unicode("BaseView").tag(sync=True)
-    width = Integer(800).tag(sync=True)
-    height = Integer(500).tag(sync=True)
+    width = Unicode("800").tag(sync=True)
+    height = Unicode("500").tag(sync=True)
     fps = Integer(24).tag(sync=True)
 
     def _handle_image(self, content):
@@ -50,6 +50,9 @@ class BaseWidget(DOMWidget):
     def _repr_html_(self):
         self._ipython_display_()
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, layout=Layout(width="800", height="500"), **kwargs)
+
 
 class ContainerWidget(BaseWidget):
     """
@@ -61,8 +64,6 @@ class ContainerWidget(BaseWidget):
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_name = Unicode("ContainerModel").tag(sync=True)
     _view_name = Unicode("ContainerView").tag(sync=True)
-    width = Unicode("800").tag(sync=True)
-    height = Unicode("500").tag(sync=True)
     gui_width = Unicode("250").tag(sync=True)
 
     def __init__(self, container=None, *args, **kwargs):

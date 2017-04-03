@@ -818,11 +818,13 @@ class App3D {
         var p_material = new THREE.MeshPhongMaterial({
             color: 0x003399,
             specular: 0x003399,
+            side: THREE.DoubleSide,
             shininess: 15
         });
         var n_material = new THREE.MeshPhongMaterial({
             color: 0xFF9900,
             specular: 0xFF9900,
+            side: THREE.DoubleSide,
             shininess: 15
         });
         var mesh1 = new THREE.Mesh(p_geometry, p_material);

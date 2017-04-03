@@ -100,7 +100,6 @@ class Field {
         } else {
             this.values = new Float32Array(func_or_values);
         };
-        console.log(this);
     };
 
     update() {
@@ -120,7 +119,6 @@ class Field {
         this.fy = Math.max(...this.y);
         this.fz = Math.max(...this.z);
         this.values = num.compute_field(this.x, this.y, this.z, this.n, this.func)["values"];
-        console.log(this);
     };
 
 };
