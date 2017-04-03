@@ -16,7 +16,7 @@ import platform
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, "js")
 is_repo = os.path.exists(os.path.join(here, ".git"))
-pltfrm = True if platform.system().lower() == 'windows' else False
+pltfrm = platform.system().lower() == 'windows' 
 
 npm_path = os.pathsep.join([
     os.path.join(node_root, "node_modules", ".bin"),

@@ -12,9 +12,9 @@ module.exports = _.extend(
     require("./app3d.js"),
     require("./field.js"),
     require("./gui.js"),
-    require("./info.js"),
     require("./marchingsquares.js"),
     require("./test.js"),
-    require("./num.js")
+    require("./num.js"),
+    require("./utility.js")
 );
 module.exports["version"] = require("../package.json").version;

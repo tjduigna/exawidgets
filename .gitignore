@@ -27,7 +27,7 @@ doc/build/
 target/
 .settings/
 js/node_modules/
-exa/static/
+js/dist/
 node_modules/
 
 
