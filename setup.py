@@ -135,9 +135,9 @@ setup_args = {
     "long_description": long_description,
     "data_files": [
         ("share/jupyter/nbextensions/jupyter-exawidgets", [
-            "build/widgets/extension.js",
-            "build/widgets/index.js",
-            "build/widgets/index.js.map",
+            "static/extension.js",
+            "static/index.js",
+            "static/index.js.map",
         ]),
     ],
     "install_requires": dependencies,
