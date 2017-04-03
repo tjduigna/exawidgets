@@ -18,7 +18,6 @@ requirements:
   run:
     - python
     - ipywidgets
-    - nose
 
 about:
   home: https://exa-analytics.github.io
