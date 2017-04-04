@@ -20,6 +20,7 @@ def _jupyter_nbextension_paths():
     }]
 
 
+from .example import HelloWorld
 from . import widget
 from .widget import ContainerWidget
 from ._version import __version__

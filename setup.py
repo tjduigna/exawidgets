@@ -16,16 +16,12 @@ import platform
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, "js")
 is_repo = os.path.exists(os.path.join(here, ".git"))
-pltfrm = platform.system().lower() == 'windows' 
-
-npm_path = os.pathsep.join([
-    os.path.join(node_root, "node_modules", ".bin"),
-                os.environ.get("PATH", os.defpath),
-])
-
+call_kwargs = {'shell': True} if platform.system().lower() == 'windows' else {}
 log.set_verbosity(log.DEBUG)
 log.info("setup.py entered")
-log.info("$PATH=%s" % os.environ["PATH"])
+log.info("$PATH=%s" % os.environ['PATH'])
+npm_path = os.pathsep.join([os.path.join(node_root, "node_modules", ".bin"),
+                            os.environ.get('PATH', os.defpath)])
 
 try:
     import pypandoc
@@ -38,20 +34,20 @@ with open("requirements.txt") as f:
 with open(os.path.join(here, "exawidgets", "_version.py")) as f:
     v = f.readlines()[-2]
     v = v.split('=')[1].strip()[1:-1]
-    version = '.'.join(v.replace(" ", "").split(","))
+    version = ".".join(v.replace(" ", "").split(","))
 
 
 def js_prerelease(command, strict=False):
-    """decorator for building minified js/css prior to another command"""
+    """Decorator for building minified js/css prior to another command."""
     class DecoratedCommand(command):
         def run(self):
-            jsdeps = self.distribution.get_command_obj("jsdeps")
+            jsdeps = self.distribution.get_command_obj('jsdeps')
             if not is_repo and all(os.path.exists(t) for t in jsdeps.targets):
                 # sdist, nothing to do
                 command.run(self)
                 return
             try:
-                self.distribution.run_command("jsdeps")
+                self.distribution.run_command('jsdeps')
             except Exception as e:
                 missing = [t for t in jsdeps.targets if not os.path.exists(t)]
                 if strict or missing:
@@ -68,30 +64,19 @@ def js_prerelease(command, strict=False):
 
 
 def update_package_data(distribution):
-    """update package_data to catch changes during setup"""
-    build_py = distribution.get_command_obj("build_py")
+    """Update package_data to catch changes during setup."""
+    build_py = distribution.get_command_obj('build_py')
     # distribution.package_data = find_package_data()
     # re-init build_py options which load package_data
     build_py.finalize_options()
 
 
-def has_npm():
-    try:
-        shell = {'shell': True} if pltfrm else {}
-        check_call(["npm", "--version"], **shell)
-        return True
-    except Exception:
-        return False
-
-
 class NPM(Command):
-    description = "install package.json dependencies using npm"
+    description = "Install package.json dependencies using npm."
     user_options = []
     node_modules = os.path.join(node_root, "node_modules")
-    targets = [
-        os.path.join(here, "build", "widgets", "extension.js"),
-        os.path.join(here, "build", "widgets", "index.js")
-    ]
+    targets = [os.path.join(here, "build", "widgets", "extension.js"),
+               os.path.join(here, "build", "widgets", "index.js")]
 
     def initialize_options(self):
         pass
@@ -99,22 +84,29 @@ class NPM(Command):
     def finalize_options(self):
         pass
 
+    def has_npm(self):
+        try:
+            check_call(["npm", "--version"], **call_kwargs)
+            return True
+        except Exception:
+            return False
+
+    def should_run_npm_install(self):
+        package_json = os.path.join(node_root, "package.json")
+        node_modules_exists = os.path.exists(self.node_modules)
+        return self.has_npm()
+
     def run(self):
-        has_npm_ = has_npm()
+        has_npm_ = self.has_npm()
         if not has_npm_:
             log.error("`npm` unavailable.  If you're running this command using sudo, make sure `npm` is available to sudo")
 
         env = os.environ.copy()
-        env["PATH"] = npm_path
+        env['PATH'] = npm_path
 
-        if has_npm:
-            log.info("Installing build dependencies with npm.  This may take a while...")
-            if pltfrm:
-                check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout,
-                           stderr=sys.stderr, shell=True)
-            else:
-                check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout,
-                           stderr=sys.stderr)
+        if self.should_run_npm_install():
+            log.info("Installing build dependencies with npm. This may take a while...")
+            check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr, **call_kwargs)
             os.utime(self.node_modules, None)
 
         for t in self.targets:
@@ -129,34 +121,35 @@ class NPM(Command):
 
 
 setup_args = {
-    "name": "exawidgets",
-    "version": version,
-    "description": "The exawidgets package for data visualization.",
-    "long_description": long_description,
-    "data_files": [
+    'name': "exawidgets",
+    'version': version,
+    'description': "A bridge between the Jupyter widgets framework and third-party JavaScript libraries",
+    'long_description': long_description,
+    'include_package_data': True,
+    'data_files': [
         ("share/jupyter/nbextensions/jupyter-exawidgets", [
             "build/widgets/extension.js",
             "build/widgets/index.js",
             "build/widgets/index.js.map",
         ]),
     ],
-    "install_requires": dependencies,
-    "packages": find_packages(),
-    "zip_safe": False,
-    "cmdclass": {
-        "build_py": js_prerelease(build_py),
-        "egg_info": js_prerelease(egg_info),
-        "sdist": js_prerelease(sdist, strict=True),
-        "jsdeps": NPM,
+    'install_requires': dependencies,
+    'packages': find_packages(),
+    'zip_safe': False,
+    'cmdclass': {
+        'build_py': js_prerelease(build_py),
+        'egg_info': js_prerelease(egg_info),
+        'sdist': js_prerelease(sdist, strict=True),
+        'jsdeps': NPM,
     },
-    "license": "Apache License Version 2.0",
-    "author": "Thomas J. Duignan and Alex Marchenko",
-    "author_email": "exa.data.analytics@gmail.com",
-    "maintainer_email": "exa.data.analytics@gmail.com",
-    "url": "https://exa-analytics.github.io",
-    "download_url": "https://github.com/exa-analytics/exawidgets/tarball/v{}".format(version),
-    "keywords": ["visualization"],
-    "classifiers": [
+    'license': "Apache License Version 2.0",
+    'author': "Thomas J. Duignan and Alex Marchenko",
+    'author_email': "exa.data.analytics@gmail.com",
+    'maintainer_email': "exa.data.analytics@gmail.com",
+    'url': "https://exa-analytics.github.io",
+    'download_url': "https://github.com/exa-analytics/exawidgets/tarball/v{}".format(version),
+    'keywords': ['visualization'],
+    'classifiers': [
         "Development Status :: 3 - Alpha",
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
