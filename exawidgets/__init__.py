@@ -14,7 +14,7 @@ def _jupyter_nbextension_paths():
     """
     return [{
         'section': "notebook",
-        'src': "../build/widgets",
+        'src': "../../../share/jupyter/nbextensions/jupyter-exawidgets",
         'dest': "jupyter-exawidgets",
         'require': "jupyter-exawidgets/extension"
     }]
