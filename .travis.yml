@@ -19,13 +19,6 @@ install:
   - conda install --yes -c conda-forge nodejs python-coveralls nbsphinx sphinx_rtd_theme
   - pip install travis-sphinx codacy-coverage codecov
   - python setup.py install
-  - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-        jupyter nbextension install exawidgets --py
-        jupyter nbextension enable exawidgets --py
-    else
-        jupyter nbextension install exawidgets --py --sys-prefix
-        jupyter nbextension enable exawidgets --py --sys-prefix
-    fi
 script:
   - nosetests --with-coverage
   - coverage xml
