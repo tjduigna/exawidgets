@@ -1,0 +1,26 @@
+package:
+  name: exawidgets
+  version: "0.1.0"
+
+app:
+  entry: exawidgets
+
+source:
+  git_rev: v0.1.0
+  git_url: https://github.com/exa-analytics/exawidgets.git
+
+requirements:
+  build:
+    - python x.x
+    - ipywidgets
+    - nose
+
+  run:
+    - python
+    - ipywidgets
+
+about:
+  home: https://exa-analytics.github.io
+  license: Apache 2.0
+  license_file: LICENSE
+  summary: A framework for data processing, analytics, and visualization.
