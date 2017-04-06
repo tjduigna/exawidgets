@@ -24,7 +24,7 @@ class TestBaseWidgets(TestCase):
     def setUp(self):
         """Execute the notebook."""
         try:
-            check_call(["jupyter", "nbconvert", "--exec", nbpath],
+            check_call(["jupyter", "nbconvert", "--exec", nbpath, "--ExecutePreprocessor.kernel_name=python"],
                        cwd=cwd, **prckws)
         except Exception as e:
             self.fail(msg=str(e))
