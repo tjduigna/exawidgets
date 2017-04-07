@@ -65,3 +65,5 @@ coverage.xml
 *.toc
 
 # Project specific
+record.txt
+exawidgets/static

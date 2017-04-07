@@ -13,10 +13,13 @@ import os
 import sys
 import platform
 
+name = "exawidgets"
+description = "A bridge between the Jupyter widgets framework and third-party JavaScript libraries"
+jsbuilddir = os.path.join("exawidgets", "static")
 here = os.path.dirname(os.path.abspath(__file__))
 node_root = os.path.join(here, "js")
 is_repo = os.path.exists(os.path.join(here, ".git"))
-call_kwargs = {'shell': True} if platform.system().lower() == 'windows' else {}
+prckws = {'shell': True} if platform.system().lower() == 'windows' else {}
 log.set_verbosity(log.DEBUG)
 log.info("setup.py entered")
 log.info("$PATH=%s" % os.environ['PATH'])
@@ -31,7 +34,7 @@ except ImportError:
         long_description = f.read()
 with open("requirements.txt") as f:
     dependencies = f.read().splitlines()
-with open(os.path.join(here, "exawidgets", "_version.py")) as f:
+with open(os.path.join(here, name, "_version.py")) as f:
     v = f.readlines()[-2]
     v = v.split('=')[1].strip()[1:-1]
     version = ".".join(v.replace(" ", "").split(","))
@@ -75,8 +78,8 @@ class NPM(Command):
     description = "Install package.json dependencies using npm."
     user_options = []
     node_modules = os.path.join(node_root, "node_modules")
-    targets = [os.path.join(here, "build", "widgets", "extension.js"),
-               os.path.join(here, "build", "widgets", "index.js")]
+    targets = [os.path.join(here, jsbuilddir, "extension.js"),
+               os.path.join(here, jsbuilddir, "index.js")]
 
     def initialize_options(self):
         pass
@@ -86,7 +89,7 @@ class NPM(Command):
 
     def has_npm(self):
         try:
-            check_call(["npm", "--version"], **call_kwargs)
+            check_call(["npm", "--version"], **prckws)
             return True
         except Exception:
             return False
@@ -106,7 +109,7 @@ class NPM(Command):
 
         if self.should_run_npm_install():
             log.info("Installing build dependencies with npm. This may take a while...")
-            check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr, **call_kwargs)
+            check_call(["npm", "install"], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr, **prckws)
             os.utime(self.node_modules, None)
 
         for t in self.targets:
@@ -121,16 +124,16 @@ class NPM(Command):
 
 
 setup_args = {
-    'name': "exawidgets",
+    'name': name,
     'version': version,
-    'description': "A bridge between the Jupyter widgets framework and third-party JavaScript libraries",
+    'description': description,
     'long_description': long_description,
     'include_package_data': True,
     'data_files': [
-        ("share/jupyter/nbextensions/jupyter-exawidgets", [
-            "build/widgets/extension.js",
-            "build/widgets/index.js",
-            "build/widgets/index.js.map",
+        ("share/jupyter/nbextensions/jupyter-" + name, [
+            os.path.join(jsbuilddir, "extension.js"),
+            os.path.join(jsbuilddir, "index.js"),
+            os.path.join(jsbuilddir, "index.js.map")
         ]),
     ],
     'install_requires': dependencies,
@@ -146,8 +149,8 @@ setup_args = {
     'author': "Thomas J. Duignan and Alex Marchenko",
     'author_email': "exa.data.analytics@gmail.com",
     'maintainer_email': "exa.data.analytics@gmail.com",
-    'url': "https://exa-analytics.github.io",
-    'download_url': "https://github.com/exa-analytics/exawidgets/tarball/v{}".format(version),
+    'url': "https://exa-analytics.github.io/" + name,
+    'download_url': "https://github.com/exa-analytics/" + name + "/tarball/v{}.tar.gz".format(version),
     'keywords': ['visualization'],
     'classifiers': [
         "Development Status :: 3 - Alpha",
