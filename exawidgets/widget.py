@@ -51,7 +51,7 @@ class BaseWidget(DOMWidget):
         self._ipython_display_()
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, layout=Layout(width="800", height="500"), **kwargs)
+        super(BaseWidget, self).__init__(*args, layout=Layout(width="800", height="500"), **kwargs)
 
 
 class ContainerWidget(BaseWidget):
@@ -67,7 +67,7 @@ class ContainerWidget(BaseWidget):
     gui_width = Unicode("250").tag(sync=True)
 
     def __init__(self, container=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(ContainerWidget, self).__init__(*args, **kwargs)
         self.container = container
         if container is None:
             test = Bool(True).tag(sync=True)
