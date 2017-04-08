@@ -141,7 +141,7 @@ class TestApp {
     render_field() {
         this.app3d.remove_meshes(this.meshes);
         this.meshes = this.app3d.add_scalar_field(this.fields.field, this.fields.isovalue, this.fields.sides);
-        this.app3d.set_camera({"x": 5.0, "y": 5.0, "z": 5.0});
+        this.app3d.set_camera({"x": 7.5, "y": 7.5, "z": 7.5});
     };
 };
 
