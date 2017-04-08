@@ -12,5 +12,15 @@ module.exports = _.extend(
     require("./exa-abcwidgets.js"), 
     require("./exa-threejs.js"),
     require("./exa-threeapp.js")
+//    {},
+//    require("./example.js"),
+//    require("./container.js"),
+//    require("./app3d.js"),
+//    require("./field.js"),
+//    require("./gui.js"),
+//    require("./marchingsquares.js"),
+//    require("./test.js"),
+//    require("./num.js"),
+//    require("./utility.js")
 );
 module.exports["version"] = require("../package.json").version;
