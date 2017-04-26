@@ -9,5 +9,5 @@ Version
     >>> help(exawidgets)
     >>> exa._version.version_info
 """
-version_info = (0, 1, 0)
+version_info = (0, 4, 0, "dev0")
 __version__ = '.'.join(map(str, version_info))
