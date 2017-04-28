@@ -1,2 +1,2 @@
-ipywidgets>=5.2,<6.0
+ipywidgets
 nose
