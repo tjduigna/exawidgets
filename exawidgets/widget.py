@@ -11,7 +11,8 @@ and `ipywidgets`_ packages.
 .. _traitlets: https://traitlets.readthedocs.io/en/stable/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 """
-from ipywidgets import DOMWidget, Widget, Layout, widget_serialization, register
+from ipywidgets import (DOMWidget, Box, VBox, HBox, Dropdown, Widget, SelectMultiple,
+                        Layout, Button, widget_serialization, register)
 from traitlets import Unicode, Integer, Bool, List, Instance
 
 display_params = {
@@ -45,11 +46,51 @@ class BaseData(Widget):
 class ContainerWidget(BaseDOM):
     _model_name = Unicode("ContainerModel").tag(sync=True)
     _view_name = Unicode("ContainerView").tag(sync=True)
-    dummy = Instance(BaseData).tag(sync=True, **widget_serialization)
+    clear = Bool(False).tag(sync=True)
+    color = Bool(False).tag(sync=True)
 
-    def __init__(self, *args, dummy=None, **kwargs):
-        if dummy is None: dummy = BaseData()
-        super(ContainerWidget, self).__init__(*args, dummy=dummy, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(ContainerWidget, self).__init__(*args, **kwargs)
+
+@register("exawidgets.ContainerBox")
+class ContainerBox(Box):
+    _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_name = Unicode("ContainerBoxModel").tag(sync=True)
+    _view_name = Unicode("ContainerBoxView").tag(sync=True)
+    but1 = Instance(Button).tag(sync=True, **widget_serialization)
+    but2 = Instance(Button).tag(sync=True, **widget_serialization)
+    container = Instance(ContainerWidget).tag(sync=True, **widget_serialization)
+
+    def __init__(self, *args, **kwargs):
+        but1 = Button(icon="bars", description=" Clear")
+        but2 = Button(icon="bars", description=" Color")
+        container = ContainerWidget()
+        def _on1(b): self.container.clear = not self.container.clear == True
+        def _on2(b): self.container.color = not self.container.color == True
+        but1.on_click(_on1)
+        but2.on_click(_on2)
+        gui = VBox([but1, but2])
+        children = HBox([gui, container])
+        super(ContainerBox, self).__init__(*args, children=[children],
+                                           but1=but1,
+                                           but2=but2,
+                                           container=container, **kwargs)
+
+
+# @register("exawidgets.ControllerWidget")
+# class ControllerWidget(Box):
+#     but1 = Instance(Button).tag(sync=True, **widget_serialization)
+#     but2 = Instance(Button).tag(sync=True, **widget_serialization)
+#     drop = Instance(Dropdown).tag(sync=True, **widget_serialization)
+#     scene = Instance(ContainerWidget).tag(sync=True, **widget_serialization)
+#
+#     def __init__(self, *args, **kwargs):
+#         but1 = Button()
+#         but2 = Button()
+#         drop = Dropdown(options=["Things", "Stuff"])
+#         scene = ContainerWidget()
+#         super(ControllerWidget, self).__init__([VBox([HBox([bu1, but2]), drop])], **kwargs)
 
 
 

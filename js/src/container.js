@@ -126,7 +126,8 @@ class ContainerModel extends BaseDOMModel {
         return _.extend({}, BaseDOMModel.prototype.defaults, {
             _model_name: "ContainerModel",
             _view_name: "ContainerView",
-            empty: true
+            clear: false,
+            color: false
         })
     }
 
@@ -137,10 +138,12 @@ class ContainerModel extends BaseDOMModel {
 
 ContainerModel.serializers = _.extend({
     dummy: { deserialize: widgets.unpack_models },
+    button: { deserialize: widgets.unpack_models },
 }, BaseDOMModel.serializers)
 
 class ContainerView extends BaseDOMView {
 
+    /*
     set_buttons() {
         var that = this;
         var clear = document.createElement("button");
@@ -153,12 +156,36 @@ class ContainerView extends BaseDOMView {
             e.preventDefault();
             that.clear();
         };
-        console.log("the clear button");
-        console.log(clear);
         var icon = document.createElement("i");
-        icon.className = "fa fa-arrows";
+        icon.className = "fa fa-bars";
         clear.appendChild(icon);
         this.el.appendChild(clear);
+
+        //this.el.appendChild(this.model.get("button"));
+
+        var dropdown = document.createElement("dropdown");
+        dropdown.classList.add("jupyter-widgets");
+        dropdown.classList.add("widget-inline-hbox");
+        dropdown.classList.add("widget-dropdown");
+        //dropdown.classList.add("dropdown");
+        dropdown.setAttribute("data-toggle", "dropdown");
+        dropdown.setAttribute("title", "Dropdown");
+        var options = ['things', 'stuff', 'faces'];
+        var listbox = document.createElement("select");
+        for (var i in options) {
+            var item = options[i];
+            var option = document.createElement("option");
+            option.textContext = item;
+            option.setAttribute("data-value", item);
+            option.value = item;
+            listbox.appendChild(option);
+        }
+        dropdown.appendChild(listbox);
+        /*
+        dropdown.onclick = function(e) {
+            console.log("can click a dropdown");
+        this.el.appendChild(dropdown);
+        };*/
 
 /*
         var color = document.createElement("button");
@@ -175,21 +202,19 @@ class ContainerView extends BaseDOMView {
         coloricon.className = "fa fa-refresh";
         color.appendChild(coloricon);
         this.el.appendChild(color);
-*/
     }
+*/
 
     init() {
         this.meshes = [];
-        this.set_buttons();
-        console.log(this.model.get("dummy"));
+        this.init_listeners();
 
         this.camera = new THREE.PerspectiveCamera(35, this.model.aspectRatio(), 10, 1000);
         this.camera.position.z = 500;
 
         this.scene = new THREE.Scene();
-        var mesh = this.test_geometry();
-        this.meshes.push(mesh);
-        this.scene.add(mesh);
+        this.test_geometry();
+        this.scene.add(this.meshes[0]);
 
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
@@ -216,13 +241,14 @@ class ContainerView extends BaseDOMView {
     }
 
     test_geometry(color) {
-        color = (typeof color === 'undefined') ? 'red' : color;
+        color = (typeof color === "undefined") ? "red" : color;
         var geom = new THREE.IcosahedronGeometry(100, 1);
         var mat = new THREE.MeshBasicMaterial({
             color: color,
             wireframe: true
         });
-        return new THREE.Mesh(geom, mat);
+        var mesh = new THREE.Mesh(geom, mat);
+        this.meshes.push(mesh);
     }
 
     render() {
@@ -247,19 +273,48 @@ class ContainerView extends BaseDOMView {
                     this.model.get("layout").get("height"));
     }
 
-    clear() {
-        if (this.meshes.length === 0) {
-            var mesh = this.test_geometry();
-            this.meshes.push(mesh);
-            this.scene.add(mesh);
-            this.render();
-        } else {
-            for (var idx in this.meshes) {
-                this.scene.remove(this.meshes[idx]);
-            };
-            this.meshes = [];
-            this.render();
+    clear_meshes() {
+        for (var idx in this.meshes) {
+            this.scene.remove(this.meshes[idx]);
         };
+        this.meshes = [];
+        this.render();
+    }
+
+    add_meshes() {
+        for (var idx in this.meshes) {
+            this.scene.add(this.meshes[idx]);
+        };
+        this.render();
+    }
+
+    clear_scene() {
+        if (this.model.get("clear")) {
+            this.clear_meshes();
+        } else {
+            var color = (this.model.get("color") === true) ? "black" : "red";
+            this.test_geometry(color);
+            this.add_meshes();
+        }
+    }
+
+    color_scene() {
+        if (this.model.get("clear") === false) {
+            if (this.model.get("color")) {
+                this.clear_meshes();
+                this.test_geometry("black");
+                this.add_meshes();
+            } else {
+                this.clear_meshes();
+                this.test_geometry();
+                this.add_meshes();
+            }
+        }
+    }
+
+    init_listeners() {
+        this.listenTo(this.model, "change:clear", this.clear_scene);
+        this.listenTo(this.model, "change:color", this.color_scene);
     }
 
 /*
@@ -280,13 +335,45 @@ class ContainerView extends BaseDOMView {
 }
 
 
+class ContainerBoxModel extends widgets.BoxModel {
+    get defaults() {
+        return _.extend({}, widgets.BoxModel.prototype.defaults, {
+            _model_module: "jupyter-exawidgets",
+            _view_module: "jupyter-exawidgets",
+            _model_name: "ContainerBoxModel",
+            _view_name: "ContainerBoxView",
+            container: undefined,
+            but1: undefined
+        })
+    }
+}
+
+ContainerBoxModel.serializers = _.extend({
+    but1: { deserialize: widgets.unpack_models },
+    container: { deserialize: widgets.unpack_models },
+}, widgets.BoxModel.serializers)
+
+class ContainerBoxView extends widgets.BoxView {
+    render() {
+        super.render();
+        var children = this.model.get("children");
+        var but1 = this.model.get("but1");
+        var container = this.model.get("container");
+        console.log(children);
+        console.log(but1);
+        console.log(container);
+    }
+}
+
 module.exports = {
     BaseDataModel: BaseDataModel,
     BaseDataView: BaseDataView,
     BaseDOMModel: BaseDOMModel,
     BaseDOMView: BaseDOMView,
     ContainerModel: ContainerModel,
-    ContainerView: ContainerView
+    ContainerView: ContainerView,
+    ContainerBoxModel: ContainerBoxModel,
+    ContainerBoxView: ContainerBoxView
 }
 
 // class BaseModel extends widgets.DOMWidgetModel {
