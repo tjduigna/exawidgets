@@ -8,7 +8,7 @@
 "use strict";
 var widgets = require("jupyter-js-widgets");
 var THREE = require("three");
-var TrackballControls = require("three-trackballcontrols");
+//var TrackballControls = require("three-trackballcontrols");
 var utility = require("./utility.js");
 
 class App3D {
@@ -17,33 +17,14 @@ class App3D {
     =========
     A 3D visualization application built on top of threejs
     */
-    constructor(canvas) {
-        this.canvas = canvas;
-        this.width = this.canvas.width();
-        this.height = this.canvas.height();
-
-        this.renderer = new THREE.WebGLRenderer({
-            canvas: this.canvas.get(0),
-            antialias: true,
-        });
-        this.renderer.setClearColor(0xFFFFFF);
-        this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(this.width, this.height);
-
-        this.scene = new THREE.Scene();
-
-        this.camera = new THREE.PerspectiveCamera(30, this.width / this.height, 1, 100000);
-
-        this.controls = new TrackballControls(this.camera, this.canvas.get(0));
-        this.controls.rotateSpeed = 10.0;
-        this.controls.zoomSpeed = 5.0;
-        this.controls.panSpeed = 0.5;
-        this.controls.noZoom = false;
-        this.controls.noPan = false;
-        this.controls.staticMoving = true;
-        this.controls.dynamicDampingFactor = 0.3;
-        this.controls.keys = [65, 83, 68];
-        this.controls.addEventListener("change", this.render.bind(this));
+    constructor(view) {
+        this.view = view;
+        console.log(this.view);
+        this.scene = view.scene;
+        this.camera = view.camera;
+        this.controls = view.controls;
+        this.renderer = view.renderer;
+        console.log(this.scene);
 
         this.dlight0 = new THREE.DirectionalLight(0xFFFFFF, 0.3);
         this.dlight0.position.set(-100, -100, -100);
@@ -101,34 +82,6 @@ class App3D {
         window.requestAnimationFrame(this.animate.bind(this));
         this.render();
         this.controls.update();
-    };
-
-    resize() {
-        /*"""
-        resize
-        ------------
-        Resizing of the renderer and controls
-        */
-        this.width = this.canvas.width();
-        this.height = this.canvas.height();
-        this.renderer.setSize(this.width, this.height);
-        this.camera.aspect = this.width / this.height;
-        this.camera.updateProjectionMatrix();
-        this.controls.handleResize();
-        this.render();
-    };
-
-    remove_meshes(meshes) {
-        /*"""
-        remove_meshes
-        ----------------
-        Iterates over the meshes and removes each from the scene.
-        */
-        if (meshes !== undefined) {
-            for (var mesh of meshes) {
-                this.scene.remove(mesh);
-            };
-        };
     };
 
     add_points(x, y, z, colors, radii) {

@@ -11,20 +11,10 @@ var __webpack_public_path__ = document.querySelector("body").getAttribute("data-
 var _ = require("underscore");
 module.exports = _.extend(
     {},
-    require("./container.js")
-//    require("./exa-tester.js"),
-//    require("./exa-abcwidgets.js"),
-//    require("./exa-threejs.js"),
-//    require("./exa-threeapp.js")
-//    {},
-//    require("./example.js"),
-//    require("./container.js"),
-//    require("./app3d.js"),
-//    require("./field.js"),
-//    require("./gui.js"),
-//    require("./marchingsquares.js"),
-//    require("./test.js"),
-//    require("./num.js"),
-//    require("./utility.js")
+    require("./container.js"),
+    require("./utility.js"),
+    require("./app3d.js"),
+    require("./field.js"),
+    require("./num.js")
 );
 module.exports["version"] = require("../package.json").version;
