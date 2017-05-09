@@ -19,12 +19,10 @@ class App3D {
     */
     constructor(view) {
         this.view = view;
-        console.log(this.view);
         this.scene = view.scene;
         this.camera = view.camera;
         this.controls = view.controls;
         this.renderer = view.renderer;
-        console.log(this.scene);
 
         this.dlight0 = new THREE.DirectionalLight(0xFFFFFF, 0.3);
         this.dlight0.position.set(-100, -100, -100);

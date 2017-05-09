@@ -8,143 +8,141 @@ A test application called when an empty container widget is rendered in a
 Jupyter notebook environment.
 */
 "use strict";
+var THREE = require("three");
+var base = require("./base.js");
+var bthree = require("./base-three.js");
 var App3D = require("./app3d.js").App3D;
-var ContainerGUI = require("./gui.js").ContainerGUI;
+var Field = require("./field.js").ScalarField;
 var num = require("./num.js");
-var field = require("./field.js");
 
-class TestApp {
-    /*"""
-    TestContainer
-    ==============
-    A test application for the container
-    */
-    constructor(view) {
-        this.view = view;
-        this.view.create_canvas();
-        this.meshes = [];
-        this.app3d = new App3D(this.view.canvas);
-        this.create_gui();
-        this.view.container.append(this.gui.domElement);
-        this.view.container.append(this.gui.custom_css);
-        this.view.container.append(this.view.canvas);
-        var view_self = this.view;
-        this.app3d.render();
-        this.view.on("displayed", function() {
-            view_self.app.app3d.animate();
-            view_self.app.app3d.controls.handleResize();
-        });
-        this.view.send({"type": "message",
-                        "app": "TestApp",
-                        "content": "True",
-                        "data": "test app message"});
-    };
 
-    create_gui() {
-        /*"""
-        create_gui
-        ------------
-        Creates the gui
-        */
-        var self = this;
-        this.gui = new ContainerGUI(this.view.gui_width);
+class TestSceneModel extends bthree.ThreeSceneModel {
 
-        // GUI levels are the heirarchy of folders in dat gui 0: top level
-        this.top = {
-            "clear": function() {
-                self.app3d.remove_meshes(self.meshes);
-            },
+    get defaults() {
+        return _.extend({}, bthree.ThreeSceneModel.prototype.defaults, {
+            _model_name: "TestModel",
+            _view_name: "TestView",
+            scn_clear: false,
+            geo_shape: false,
+            geo_color: false,
+            field_iso: 2.0,
+            field: "null",
+            field_nx: 20,
+            field_ny: 20,
+            field_nz: 20,
+        })
+    }
 
-            "test mesh": function() {
-                self.app3d.remove_meshes(self.meshes);
-                self.meshes = self.app3d.test_mesh();
-            },
+}
 
-            "test phong": function() {
-                self.app3d.remove_meshes(self.meshes);
-                self.meshes = self.app3d.test_mesh(true);
-            },
-        };
-        this.top.clear_button = this.gui.add(this.top, "clear");
-        this.top.test_mesh_button = this.gui.add(this.top, "test mesh");
-        this.top.test_phong_button = this.gui.add(this.top, "test phong");
 
-        this.fields = {
-            "field type": null,
-            "isovalue": 1.0, "boxsize": 3,
-            "nx": 13,   "ny": 13,   "nz": 13,
+class TestSceneView extends bthree.ThreeSceneView {
+
+    init() {
+        super.init();
+        console.log("this.send");
+        console.log(this.send);
+        this.init_listeners();
+        this.test_geometry();
+        this.field_params = {
+            "isoval": this.model.get("field_iso"),
+            "boxsize": 3.0,
+            "nx": this.model.get("field_nx"),
+            "ny": this.model.get("field_ny"),
+            "nz": this.model.get("field_nz"),
             "ox": -3.0, "oy": -3.0, "oz": -3.0,
             "fx":  3.0, "fy":  3.0, "fz":  3.0,
             "dxi": 0.5, "dyj": 0.5, "dzk": 0.5,
             "dxj": 0.0, "dyi": 0.0, "dzi": 0.0,
             "dxk": 0.0, "dyk": 0.0, "dzj": 0.0,
         };
-        this.fields["folder"] = this.gui.addFolder("fields");
-        this.fields["field_type_dropdown"] = this.fields.folder.add(this.fields, "field type", num.function_list_3d);
-        this.fields["isovalue_slider"] = this.fields.folder.add(this.fields, "isovalue", 0.1, 10.0);
-        this.fields["boxsize_slider"] = this.fields.folder.add(this.fields, "boxsize", 3, 5);
-        this.fields["nx_slider"] = this.fields.folder.add(this.fields, "nx").min(5).max(25).step(1);
-        this.fields["ny_slider"] = this.fields.folder.add(this.fields, "ny").min(5).max(25).step(1);
-        this.fields["nz_slider"] = this.fields.folder.add(this.fields, "nz").min(5).max(25).step(1);
-        this.fields.field_type_dropdown.onFinishChange(function(field_type) {
-            self.fields["field type"] = field_type;
-            self.fields.field = new field.ScalarField(self.fields, num[field_type]);
-            self.render_field();
-        });
-        this.fields.isovalue_slider.onFinishChange(function(value) {
-            self.fields.isovalue = value;
-            self.render_field();
-        });
-        this.fields.boxsize_slider.onFinishChange(function(value) {
-            self.fields.fx = value;
-            self.fields.fy = value;
-            self.fields.fz = value;
-            self.fields.ox = -value;
-            self.fields.oy = -value;
-            self.fields.oz = -value;
-            self.fields.field.x = num.linspace(self.fields.ox, self.fields.fx, self.fields.nx);
-            self.fields.field.y = num.linspace(self.fields.oy, self.fields.fy, self.fields.ny);
-            self.fields.field.z = num.linspace(self.fields.oz, self.fields.fz, self.fields.nz);
-            self.fields.field.update();
-            self.render_field();
-        });
-        this.fields.nx_slider.onFinishChange(function(value) {
-            self.fields.nx = value;
-            self.fields.field.x = num.linspace(self.fields.ox,
-                                               self.fields.fx,
-                                               self.fields.nx);
-            self.fields.field.update();
-            self.render_field();
-        });
-        this.fields.ny_slider.onFinishChange(function(value) {
-            self.fields.ny = value;
-            self.fields.field.y = num.linspace(self.fields.oy,
-                                               self.fields.fy,
-                                               self.fields.ny);
-            self.fields.field.update();
-            self.render_field();
-        });
-        this.fields.nz_slider.onFinishChange(function(value) {
-            self.fields.nz = value;
-            self.fields.field.z = num.linspace(self.fields.oz,
-                                               self.fields.fz,
-                                               self.fields.nz);
-            self.fields.field.update();
-            self.render_field();
-        });
-    };
+        this.app3d = new App3D(this);
+        this.add_meshes();
+        this.animation();
+    }
 
-    resize() {
-        this.app3d.resize();
-    };
+    /*
+    render() {
+        this.renderer.render(this.scene, this.camera);
+    }
+    */
 
-    render_field() {
-        this.app3d.remove_meshes(this.meshes);
-        this.meshes = this.app3d.add_scalar_field(this.fields.field, this.fields.isovalue, this.fields.sides);
-        this.app3d.set_camera({"x": 5.0, "y": 5.0, "z": 5.0});
-    };
-};
+    test_geometry(color) {
+        color = (typeof color === "undefined") ? "red" : color;
+        var geom = new THREE.IcosahedronGeometry(2, 1);
+        var mat = new THREE.MeshBasicMaterial({
+            color: color,
+            wireframe: true
+        });
+        var mesh = new THREE.Mesh(geom, mat);
+        this.meshes.push(mesh);
+    }
+
+    shape_scene() {
+        this.clear_meshes();
+        this.test_geometry();
+        this.add_meshes();
+    }
+
+    color_scene() {
+        var color = (this.model.get("geo_color") === true) ? "black": "red";
+        this.clear_meshes();
+        this.test_geometry(color);
+        this.add_meshes();
+    }
+
+    field_scene() {
+        this.clear_meshes();
+        var field_type = this.model.get("field");
+        this.field_params["isoval"] = this.model.get("field_iso");
+        this.field_params["nx"] = this.model.get("field_nx");
+        this.field_params["ny"] = this.model.get("field_ny");
+        this.field_params["nz"] = this.model.get("field_nz");
+        var thisfield = new Field(this.field_params,
+                                              num[field_type]);
+        this.meshes = this.app3d.add_scalar_field(thisfield,
+                                                  this.field_params.isoval);
+        this.add_meshes();
+    }
+
+    init_listeners() {
+        this.listenTo(this.model, "change:scn_clear", this.clear_meshes);
+        this.listenTo(this.model, "change:scn_saves", this.scene_save);
+        this.listenTo(this.model, "change:geo_shape", this.shape_scene);
+        this.listenTo(this.model, "change:geo_color", this.color_scene);
+        this.listenTo(this.model, "change:field", this.field_scene);
+        this.listenTo(this.model, "change:field_nx", this.field_scene);
+        this.listenTo(this.model, "change:field_ny", this.field_scene);
+        this.listenTo(this.model, "change:field_nz", this.field_scene);
+        this.listenTo(this.model, "change:field_iso", this.field_scene);
+    }
+
+}
+
+
+class TestContainerModel extends base.BaseBoxModel {
+    get defaults() {
+        return _.extend({}, base.BaseBoxModel.prototype.defaults, {
+            _model_module: "jupyter-exawidgets",
+            _view_module: "jupyter-exawidgets",
+            _model_name: "TestContainerModel",
+            _view_name: "TestContainerView"
+        })
+    }
+}
+
+
+class TestContainerView extends base.BaseBoxView {
+    render() {
+        console.log("test container view render");
+        super.render();
+    }
+}
+
 
 module.exports = {
-    "TestApp": TestApp
+    TestSceneModel: TestSceneModel,
+    TestSceneView: TestSceneView,
+    TestContainerModel: TestContainerModel,
+    TestContainerView: TestContainerView
 }

@@ -11,110 +11,166 @@ and `ipywidgets`_ packages.
 .. _traitlets: https://traitlets.readthedocs.io/en/stable/
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 """
-from ipywidgets import (DOMWidget, Box, VBox, HBox, Dropdown, Widget, IntSlider,
-                        FloatSlider, Layout, Button, widget_serialization, register)
-from traitlets import Unicode, Integer, Bool, List, Instance, Int, Float
+import os
+from base64 import b64decode
+from ipywidgets import (Widget, DOMWidget, Box, VBox, HBox,
+                        Dropdown, IntSlider, FloatSlider, Button,
+                        Layout, widget_serialization, register)
+from traitlets import Unicode, Bool, List, Instance, Int, Float
 
-display_params = {
-    'savedir': '',
-    'filename': '',
-}
+
+# Default layouts
+scn_lo = Layout(width="600", height="450")
+gui_lo = Layout(width="200px")
+
+
+@register("exawidgets.BaseData")
+class BaseData(Widget):
+    """Base class for widgets attached to ThreeJS scene."""
+    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_name = Unicode("BaseDataModel").tag(sync=True)
+    _view_name = Unicode("BaseDataView").tag(sync=True)
+
 
 @register("exawidgets.BaseDOM")
 class BaseDOM(DOMWidget):
+    """Base class for ThreeJS scene."""
     _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_name = Unicode("BaseDOMModel").tag(sync=True)
     _view_name = Unicode("BaseDOMView").tag(sync=True)
     background = Unicode("green").tag(sync=True)
 
-    def __init__(self, *args, layout=None, **kwargs):
-        if layout is None: layout = Layout(width="600", height="450")
-        super(BaseDOM, self).__init__(*args, layout=layout, **kwargs)
+    def _handle_custom_msg(self, message, callback):
+        """Custom message handler."""
+        typ = message["type"]
+        content = message["content"]
+        if typ == "image": self._handle_image(content)
+
+    def _handle_image(self, content):
+        raise NotImplementedError()
+
+    def __init__(self, *args, **kwargs):
+        super(BaseDOM, self).__init__(*args, layout=scn_lo, **kwargs)
 
 
-@register("exawidgets.BaseData")
-class BaseData(Widget):
-    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
+@register("exawidgets.BaseBox")
+class BaseBox(Box):
+    """Base class for containers of a GUI and scene."""
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
-    _model_name = Unicode("BaseDataModel").tag(sync=True)
-    _view_name = Unicode("BaseDataView").tag(sync=True)
-    datars = List([0, 1, 2, 3]).tag(sync=True)
+    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
+    _model_name = Unicode("BaseBoxModel").tag(sync=True)
+    _view_name = Unicode("BaseBoxView").tag(sync=True)
 
 
-@register("exawidgets.ContainerWidget")
-class ContainerWidget(BaseDOM):
-    _model_name = Unicode("ContainerModel").tag(sync=True)
-    _view_name = Unicode("ContainerView").tag(sync=True)
-    clear = Bool(False).tag(sync=True)
-    color = Bool(False).tag(sync=True)
-    shape = Bool(False).tag(sync=True)
+@register("exawidgets.ThreeScene")
+class ThreeScene(BaseDOM):
+    _model_name = Unicode("ThreeSceneModel").tag(sync=True)
+    _view_name = Unicode("ThreeSceneView").tag(sync=True)
+    savedir = Unicode("").tag(sync=True)
+    imgname = Unicode("").tag(sync=True)
+
+    def _handle_image(self, content):
+        #print(content)
+        adir = self.savedir
+        if not adir: adir = os.getcwd()
+        fname = self.imgname
+        if not fname:
+            nxt = 0
+            fname = "{:06d}.png".format(nxt)
+            while os.path.isfile(os.sep.join([adir, fname])):
+                nxt += 1
+                fname = "{:06d}.png".format(nxt)
+        with open(os.sep.join([adir, fname]), "wb") as f:
+            f.write(b64decode(content.replace("data:image/png;base64,", "")))
+
+
+@register("exawidgets.TestScene")
+class TestScene(ThreeScene):
+    _model_name = Unicode("TestSceneModel").tag(sync=True)
+    _view_name = Unicode("TestSceneView").tag(sync=True)
+    scn_clear = Bool(False).tag(sync=True)
+    scn_saves = Bool(False).tag(sync=True)
+    geo_shape = Bool(False).tag(sync=True)
+    geo_color = Bool(False).tag(sync=True)
     field = Unicode("null").tag(sync=True)
     field_nx = Int(20).tag(sync=True)
     field_ny = Int(20).tag(sync=True)
     field_nz = Int(20).tag(sync=True)
-    isoval = Float(3.0).tag(sync=True)
+    field_iso = Float(2.0).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
-        super(ContainerWidget, self).__init__(*args, **kwargs)
+        super(TestScene, self).__init__(*args, **kwargs)
 
-width = "200px"
-alayout = Layout(width=width)
-rpad = "margin: 0px 0px 0px -40px;"
-blayout = Layout(width=width, margin=rpad)
 
-@register("exawidgets.ContainerBox")
-class ContainerBox(Box):
+field_options = ["null", "sphere", "torus", "ellipsoid"]
+field_n_lims = {"min": 10, "max": 50, "step": 1, "layout": gui_lo}
+
+@register("exawidgets.TestContainer")
+class TestContainer(BaseBox):
     _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
-    _model_name = Unicode("ContainerBoxModel").tag(sync=True)
-    _view_name = Unicode("ContainerBoxView").tag(sync=True)
-    bclear = Instance(Button).tag(sync=True, **widget_serialization)
-    bshape = Instance(Button).tag(sync=True, **widget_serialization)
-    bcolor = Instance(Button).tag(sync=True, **widget_serialization)
-    drop = Instance(Dropdown).tag(sync=True, **widget_serialization)
-    nxsl = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    nysl = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    nzsl = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    isosl = Instance(FloatSlider).tag(sync=True, **widget_serialization)
-    container = Instance(ContainerWidget).tag(sync=True, **widget_serialization)
+    _model_name = Unicode("TestContainerModel").tag(sync=True)
+    _view_name = Unicode("TestContainerView").tag(sync=True)
+    scn_clear = Instance(Button).tag(sync=True, **widget_serialization)
+    scn_saves = Instance(Button).tag(sync=True, **widget_serialization)
+    geo_shape = Instance(Button).tag(sync=True, **widget_serialization)
+    geo_color = Instance(Button).tag(sync=True, **widget_serialization)
+    field = Instance(Dropdown).tag(sync=True, **widget_serialization)
+    field_nx = Instance(IntSlider).tag(sync=True, **widget_serialization)
+    field_ny = Instance(IntSlider).tag(sync=True, **widget_serialization)
+    field_nz = Instance(IntSlider).tag(sync=True, **widget_serialization)
+    field_iso = Instance(FloatSlider).tag(sync=True, **widget_serialization)
+    scene = Instance(TestScene).tag(sync=True, **widget_serialization)
 
     def __init__(self, *args, **kwargs):
-        bclear = Button(icon="bomb", description=" Clear", layout=alayout)
-        bshape = Button(icon="cubes", description="  Geometry", layout=alayout)
-        bcolor = Button(icon="paint-brush", description="  Color", layout=alayout)
-        drop = Dropdown(options=["null", "sphere", "torus", "ellipsoid"],
-                        layout=alayout)
-        nxsl = IntSlider(min=10, max=50, step=1, description="N$_{x}$", layout=blayout)
-        nysl = IntSlider(min=10, max=50, step=1, description="N$_{y}$", layout=blayout)
-        nzsl = IntSlider(min=10, max=50, step=1, description="N$_{z}$", layout=blayout)
-        isosl = FloatSlider(min=3.0, max=10.0, description="Iso.", layout=blayout)
-        container = ContainerWidget()
-        # Button handlers
-        def _onclear(b): self.container.clear = not self.container.clear == True
-        def _onshape(b): self.container.shape = not self.container.shape == True
-        def _oncolor(b): self.container.color = not self.container.color == True
+        scene = TestScene()
+        scn_clear = Button(icon="bomb", description=" Clear", layout=gui_lo)
+        scn_saves = Button(icon="camera", description=" Save", layout=gui_lo)
+        geo_shape = Button(icon="cubes", description="  Geometry", layout=gui_lo)
+        geo_color = Button(icon="paint-brush", description="  Color", layout=gui_lo)
+        field = Dropdown(options=field_options, layout=gui_lo)
+        field_nx = IntSlider(description="N$_{x}$", **field_n_lims)
+        field_ny = IntSlider(description="N$_{y}$", **field_n_lims)
+        field_nz = IntSlider(description="N$_{z}$", **field_n_lims)
+        field_iso = FloatSlider(min=3.0, max=10.0, description="Iso.", layout=gui_lo)
         # Button callbacks
-        bclear.on_click(_onclear)
-        bshape.on_click(_onshape)
-        bcolor.on_click(_oncolor)
-        # Slider handlers
-        def _onfield(c): self.container.field = c["new"]
-        def _onnxsl(c): self.container.field_nx = c["new"]
-        def _onnysl(c): self.container.field_ny = c["new"]
-        def _onnzsl(c): self.container.field_nz = c["new"]
-        def _oniso(c): self.container.isoval = c["new"]
+        def _scn_clear(b): self.scene.scn_clear = not self.scene.scn_clear == True
+        def _scn_saves(b): self.scene.scn_saves = not self.scene.scn_saves == True
+        def _geo_shape(b): self.scene.geo_shape = not self.scene.geo_shape == True
+        def _geo_color(b): self.scene.geo_color = not self.scene.geo_color == True
         # Slider callbacks
-        drop.observe(_onfield, names="value")
-        nxsl.observe(_onnxsl, names="value")
-        nysl.observe(_onnysl, names="value")
-        nzsl.observe(_onnzsl, names="value")
-        isosl.observe(_oniso, names="value")
-        # Stitch it all together
-        gui = VBox([bclear, bshape, bcolor, drop, isosl, nxsl, nysl, nzsl])
-        children = HBox([gui, container])
-        super(ContainerBox, self).__init__(*args, children=[children],
-                                           bclear=bclear, bshape=bshape,
-                                           bcolor=bcolor, drop=drop, isosl=isosl,
-                                           nxsl=nxsl, nysl=nysl, nzsl=nzsl,
-                                           container=container, **kwargs)
+        def _field(c): self.scene.field = c["new"]
+        def _field_nx(c): self.scene.field_nx = c["new"]
+        def _field_ny(c): self.scene.field_ny = c["new"]
+        def _field_nz(c): self.scene.field_nz = c["new"]
+        def _field_iso(c): self.scene.field_iso = c["new"]
+        # Button handlers
+        geo_shape.on_click(_geo_shape)
+        scn_clear.on_click(_scn_clear)
+        scn_saves.on_click(_scn_saves)
+        geo_color.on_click(_geo_color)
+        # Slider handlers
+        field.observe(_field, names="value")
+        field_nx.observe(_field_nx, names="value")
+        field_ny.observe(_field_ny, names="value")
+        field_nz.observe(_field_nz, names="value")
+        field_iso.observe(_field_iso, names="value")
+        # Put it all together
+        gui = VBox([scn_clear, scn_saves, geo_shape, geo_color, field,
+                    field_iso, field_nx, field_ny, field_nz])
+        children = HBox([gui, scene])
+        super(TestContainer, self).__init__(*args,
+                                            children=[children],
+                                            scn_clear=scn_clear,
+                                            scn_saves=scn_saves,
+                                            geo_shape=geo_shape,
+                                            geo_color=geo_color,
+                                            field=field,
+                                            field_iso=field_iso,
+                                            field_nx=field_nx,
+                                            field_ny=field_ny,
+                                            field_nz=field_nz,
+                                            scene=scene,
+                                            **kwargs)

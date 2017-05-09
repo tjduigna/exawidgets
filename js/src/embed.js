@@ -8,10 +8,12 @@
 var _ = require("underscore");
 module.exports = _.extend(
     {},
-    require("./container.js"),
+    require("./base.js"),
+    require("./base-three.js"),
     require("./utility.js"),
     require("./app3d.js"),
     require("./field.js"),
+    require("./test.js"),
     require("./num.js")
 );
 module.exports["version"] = require("../package.json").version;
