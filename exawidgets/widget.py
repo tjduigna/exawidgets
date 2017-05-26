@@ -13,16 +13,16 @@ and `ipywidgets`_ packages.
 """
 import os
 from base64 import b64decode
-from ipywidgets import (Widget, DOMWidget, Box, VBox, HBox,
+from ipywidgets import (Widget, DOMWidget, Box, VBox, HBox, Label,
                         Dropdown, IntSlider, FloatSlider, Button,
                         Layout, widget_serialization, register)
 from traitlets import Unicode, Bool, List, Instance, Int, Float
 
 
 # Default layouts
-scn_lo = Layout(width="600", height="450")
+width = "600"
+height = "450"
 gui_lo = Layout(width="200px")
-
 
 @register("exawidgets.BaseData")
 class BaseData(Widget):
@@ -52,7 +52,9 @@ class BaseDOM(DOMWidget):
         raise NotImplementedError()
 
     def __init__(self, *args, **kwargs):
-        super(BaseDOM, self).__init__(*args, layout=scn_lo, **kwargs)
+        super(BaseDOM, self).__init__(*args,
+                                      layout=Layout(width=width, height=height),
+                                      **kwargs)
 
 
 @register("exawidgets.BaseBox")
@@ -90,15 +92,15 @@ class ThreeScene(BaseDOM):
 class TestScene(ThreeScene):
     _model_name = Unicode("TestSceneModel").tag(sync=True)
     _view_name = Unicode("TestSceneView").tag(sync=True)
-    scn_clear = Bool(False).tag(sync=True)
-    scn_saves = Bool(False).tag(sync=True)
-    geo_shape = Bool(False).tag(sync=True)
-    geo_color = Bool(False).tag(sync=True)
-    field = Unicode("null").tag(sync=True)
-    field_nx = Int(20).tag(sync=True)
-    field_ny = Int(20).tag(sync=True)
-    field_nz = Int(20).tag(sync=True)
-    field_iso = Float(2.0).tag(sync=True)
+    scn_clear = Bool(false).tag(sync=true)
+    scn_saves = Bool(false).tag(sync=true)
+    geo_shape = Bool(false).tag(sync=true)
+    geo_color = Bool(false).tag(sync=true)
+    field = Unicode("null").tag(sync=true)
+    field_nx = Int(20).tag(sync=true)
+    field_ny = Int(20).tag(sync=true)
+    field_nz = Int(20).tag(sync=true)
+    field_iso = Float(2.0).tag(sync=true)
 
     def __init__(self, *args, **kwargs):
         super(TestScene, self).__init__(*args, **kwargs)
@@ -107,21 +109,18 @@ class TestScene(ThreeScene):
 field_options = ["null", "sphere", "torus", "ellipsoid"]
 field_n_lims = {"min": 10, "max": 50, "step": 1, "layout": gui_lo}
 
+## Disclaimer: see https://github.com/jupyter-widgets/ipywidgets/pull/1376
+##             ought to fix the labeling // interactive widget spacing issue
+##             we have been grappling with. It essentially amounts to adding
+##             a style dict=(description_width="XXpx") keyword argument to
+##             to any controller widgets we may find useful. This will replace
+##             the currently required layout attribute in the controller widgets.
+
+
 @register("exawidgets.TestContainer")
 class TestContainer(BaseBox):
-    _model_module = Unicode("jupyter-exawidgets").tag(sync=True)
-    _view_module = Unicode("jupyter-exawidgets").tag(sync=True)
     _model_name = Unicode("TestContainerModel").tag(sync=True)
     _view_name = Unicode("TestContainerView").tag(sync=True)
-    scn_clear = Instance(Button).tag(sync=True, **widget_serialization)
-    scn_saves = Instance(Button).tag(sync=True, **widget_serialization)
-    geo_shape = Instance(Button).tag(sync=True, **widget_serialization)
-    geo_color = Instance(Button).tag(sync=True, **widget_serialization)
-    field = Instance(Dropdown).tag(sync=True, **widget_serialization)
-    field_nx = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    field_ny = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    field_nz = Instance(IntSlider).tag(sync=True, **widget_serialization)
-    field_iso = Instance(FloatSlider).tag(sync=True, **widget_serialization)
     scene = Instance(TestScene).tag(sync=True, **widget_serialization)
 
     def __init__(self, *args, **kwargs):
@@ -158,19 +157,11 @@ class TestContainer(BaseBox):
         field_nz.observe(_field_nz, names="value")
         field_iso.observe(_field_iso, names="value")
         # Put it all together
+        # Labels separately
         gui = VBox([scn_clear, scn_saves, geo_shape, geo_color, field,
                     field_iso, field_nx, field_ny, field_nz])
         children = HBox([gui, scene])
         super(TestContainer, self).__init__(*args,
                                             children=[children],
-                                            scn_clear=scn_clear,
-                                            scn_saves=scn_saves,
-                                            geo_shape=geo_shape,
-                                            geo_color=geo_color,
-                                            field=field,
-                                            field_iso=field_iso,
-                                            field_nx=field_nx,
-                                            field_ny=field_ny,
-                                            field_nz=field_nz,
                                             scene=scene,
                                             **kwargs)

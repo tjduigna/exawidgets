@@ -123,8 +123,6 @@ class TestSceneView extends bthree.ThreeSceneView {
 class TestContainerModel extends base.BaseBoxModel {
     get defaults() {
         return _.extend({}, base.BaseBoxModel.prototype.defaults, {
-            _model_module: "jupyter-exawidgets",
-            _view_module: "jupyter-exawidgets",
             _model_name: "TestContainerModel",
             _view_name: "TestContainerView"
         })
