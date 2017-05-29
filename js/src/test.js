@@ -40,8 +40,6 @@ class TestSceneView extends bthree.ThreeSceneView {
 
     init() {
         super.init();
-        console.log("this.send");
-        console.log(this.send);
         this.init_listeners();
         this.test_geometry();
         this.field_params = {

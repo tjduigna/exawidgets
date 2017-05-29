@@ -75,39 +75,41 @@ class ThreeScene(BaseDOM):
 
     def _handle_image(self, content):
         #print(content)
-        adir = self.savedir
-        if not adir: adir = os.getcwd()
+        savedir = self.savedir
+        if not savedir: savedir = os.getcwd()
         fname = self.imgname
         if not fname:
             nxt = 0
             fname = "{:06d}.png".format(nxt)
-            while os.path.isfile(os.sep.join([adir, fname])):
+            while os.path.isfile(os.sep.join([savedir, fname])):
                 nxt += 1
                 fname = "{:06d}.png".format(nxt)
-        with open(os.sep.join([adir, fname]), "wb") as f:
+        with open(os.sep.join([savedir, fname]), "wb") as f:
             f.write(b64decode(content.replace("data:image/png;base64,", "")))
+        # Pass on this for now
+        # try:
+        #     crop = " ".join(["convert -trim", imgname, imgname])
+        #     subprocess.call(crop, cwd=savedir, shell=True)
+        # except:
+        #     pass
 
 
 @register("exawidgets.TestScene")
 class TestScene(ThreeScene):
     _model_name = Unicode("TestSceneModel").tag(sync=True)
     _view_name = Unicode("TestSceneView").tag(sync=True)
-    scn_clear = Bool(false).tag(sync=true)
-    scn_saves = Bool(false).tag(sync=true)
-    geo_shape = Bool(false).tag(sync=true)
-    geo_color = Bool(false).tag(sync=true)
-    field = Unicode("null").tag(sync=true)
-    field_nx = Int(20).tag(sync=true)
-    field_ny = Int(20).tag(sync=true)
-    field_nz = Int(20).tag(sync=true)
-    field_iso = Float(2.0).tag(sync=true)
+    scn_clear = Bool(False).tag(sync=True)
+    scn_saves = Bool(False).tag(sync=True)
+    geo_shape = Bool(False).tag(sync=True)
+    geo_color = Bool(False).tag(sync=True)
+    field = Unicode("null").tag(sync=True)
+    field_nx = Int(20).tag(sync=True)
+    field_ny = Int(20).tag(sync=True)
+    field_nz = Int(20).tag(sync=True)
+    field_iso = Float(2.0).tag(sync=True)
 
     def __init__(self, *args, **kwargs):
         super(TestScene, self).__init__(*args, **kwargs)
-
-
-field_options = ["null", "sphere", "torus", "ellipsoid"]
-field_n_lims = {"min": 10, "max": 50, "step": 1, "layout": gui_lo}
 
 ## Disclaimer: see https://github.com/jupyter-widgets/ipywidgets/pull/1376
 ##             ought to fix the labeling // interactive widget spacing issue
@@ -115,6 +117,10 @@ field_n_lims = {"min": 10, "max": 50, "step": 1, "layout": gui_lo}
 ##             a style dict=(description_width="XXpx") keyword argument to
 ##             to any controller widgets we may find useful. This will replace
 ##             the currently required layout attribute in the controller widgets.
+
+
+field_options = ["null", "sphere", "torus", "ellipsoid"]
+field_n_lims = {"min": 10, "max": 50, "step": 1, "layout": gui_lo}
 
 
 @register("exawidgets.TestContainer")

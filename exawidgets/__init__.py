@@ -23,3 +23,4 @@ def _jupyter_nbextension_paths():
 #from .example import HelloWorld
 from . import widget#, widgets
 from ._version import __version__
+from .widget import ThreeScene, BaseBox, BaseData
