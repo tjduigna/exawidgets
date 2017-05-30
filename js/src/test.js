@@ -22,7 +22,6 @@ class TestSceneModel extends bthree.ThreeSceneModel {
         return _.extend({}, bthree.ThreeSceneModel.prototype.defaults, {
             _model_name: "TestModel",
             _view_name: "TestView",
-            scn_clear: false,
             geo_shape: false,
             geo_color: false,
             field_iso: 2.0,
@@ -104,8 +103,6 @@ class TestSceneView extends bthree.ThreeSceneView {
     }
 
     init_listeners() {
-        this.listenTo(this.model, "change:scn_clear", this.clear_meshes);
-        this.listenTo(this.model, "change:scn_saves", this.scene_save);
         this.listenTo(this.model, "change:geo_shape", this.shape_scene);
         this.listenTo(this.model, "change:geo_color", this.color_scene);
         this.listenTo(this.model, "change:field", this.field_scene);

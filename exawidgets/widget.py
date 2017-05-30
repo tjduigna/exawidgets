@@ -70,6 +70,8 @@ class BaseBox(Box):
 class ThreeScene(BaseDOM):
     _model_name = Unicode("ThreeSceneModel").tag(sync=True)
     _view_name = Unicode("ThreeSceneView").tag(sync=True)
+    scn_clear = Bool(False).tag(sync=True)
+    scn_saves = Bool(False).tag(sync=True)
     savedir = Unicode("").tag(sync=True)
     imgname = Unicode("").tag(sync=True)
 
@@ -98,8 +100,6 @@ class ThreeScene(BaseDOM):
 class TestScene(ThreeScene):
     _model_name = Unicode("TestSceneModel").tag(sync=True)
     _view_name = Unicode("TestSceneView").tag(sync=True)
-    scn_clear = Bool(False).tag(sync=True)
-    scn_saves = Bool(False).tag(sync=True)
     geo_shape = Bool(False).tag(sync=True)
     geo_color = Bool(False).tag(sync=True)
     field = Unicode("null").tag(sync=True)
@@ -108,8 +108,6 @@ class TestScene(ThreeScene):
     field_nz = Int(20).tag(sync=True)
     field_iso = Float(2.0).tag(sync=True)
 
-    def __init__(self, *args, **kwargs):
-        super(TestScene, self).__init__(*args, **kwargs)
 
 ## Disclaimer: see https://github.com/jupyter-widgets/ipywidgets/pull/1376
 ##             ought to fix the labeling // interactive widget spacing issue

@@ -15,6 +15,8 @@ class ThreeSceneModel extends base.BaseDOMModel {
         return _.extend({}, base.BaseDOMModel.prototype.defaults, {
             _model_name: "ThreeSceneModel",
             _view_name: "ThreeSceneView",
+            scn_clear: false,
+            scn_saves: false,
             savedir: "",
             imgname: ""
         })
@@ -55,6 +57,7 @@ class ThreeSceneView extends base.BaseDOMView {
         this.controls.addEventListener("change", this.render.bind(this));
         this.controls.target = new THREE.Vector3(0.0, 0.0, 0.0);
 
+        this.base_listeners();
         this.render();
         this.animation();
     }
@@ -108,6 +111,11 @@ class ThreeSceneView extends base.BaseDOMView {
         this.camera.aspect = this.model.aspectRatio();
         this.camera.updateProjectionMatrix();
         this.render();
+    }
+
+    base_listeners() {
+        this.listenTo(this.model, "change:scn_clear", this.clear_meshes);
+        this.listenTo(this.model, "change:scn_saves", this.scene_save);
     }
 
 }
