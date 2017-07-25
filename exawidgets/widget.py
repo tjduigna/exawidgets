@@ -12,6 +12,7 @@ and `ipywidgets`_ packages.
 .. _ipywidgets: https://ipywidgets.readthedocs.io/en/latest/
 """
 import os
+from collections import OrderedDict
 from base64 import b64decode
 from ipywidgets import (Widget, DOMWidget, Box, VBox, HBox, Label,
                         Dropdown, IntSlider, FloatSlider, Button,
@@ -113,8 +114,7 @@ class TestScene(ThreeScene):
 ##             ought to fix the labeling // interactive widget spacing issue
 ##             we have been grappling with. It essentially amounts to adding
 ##             a style dict=(description_width="XXpx") keyword argument to
-##             to any controller widgets we may find useful. This will replace
-##             the currently required layout attribute in the controller widgets.
+##             to any controller widgets we may find useful.
 
 
 field_options = ["null", "sphere", "torus", "ellipsoid"]
@@ -127,45 +127,70 @@ class TestContainer(BaseBox):
     _view_name = Unicode("TestContainerView").tag(sync=True)
     scene = Instance(TestScene).tag(sync=True, **widget_serialization)
 
-    def __init__(self, *args, **kwargs):
-        scene = TestScene()
-        scn_clear = Button(icon="bomb", description=" Clear", layout=gui_lo)
-        scn_saves = Button(icon="camera", description=" Save", layout=gui_lo)
-        geo_shape = Button(icon="cubes", description="  Geometry", layout=gui_lo)
-        geo_color = Button(icon="paint-brush", description="  Color", layout=gui_lo)
-        field = Dropdown(options=field_options, layout=gui_lo)
-        field_nx = IntSlider(description="N$_{x}$", **field_n_lims)
-        field_ny = IntSlider(description="N$_{y}$", **field_n_lims)
-        field_nz = IntSlider(description="N$_{z}$", **field_n_lims)
-        field_iso = FloatSlider(min=3.0, max=10.0, description="Iso.", layout=gui_lo)
+    def init_gui(self):
+        self.controls = OrderedDict([
+            ('scn_clear', Button(icon="bomb", description=" Clear",
+                                 layout=gui_lo)),
+            ('scn_saves', Button(icon="camera", description=" Save",
+                                 layout=gui_lo)),
+            ('geo_shape', Button(icon="cubes", description="  Geometry",
+                                 layout=gui_lo)),
+            ('geo_color', Button(icon="paint-brush", description="  Color",
+                                 layout=gui_lo)),
+            ('field', Dropdown(options=field_options, layout=gui_lo))
+        ])
         # Button callbacks
         def _scn_clear(b): self.scene.scn_clear = not self.scene.scn_clear == True
         def _scn_saves(b): self.scene.scn_saves = not self.scene.scn_saves == True
         def _geo_shape(b): self.scene.geo_shape = not self.scene.geo_shape == True
         def _geo_color(b): self.scene.geo_color = not self.scene.geo_color == True
-        # Slider callbacks
         def _field(c): self.scene.field = c["new"]
-        def _field_nx(c): self.scene.field_nx = c["new"]
-        def _field_ny(c): self.scene.field_ny = c["new"]
-        def _field_nz(c): self.scene.field_nz = c["new"]
-        def _field_iso(c): self.scene.field_iso = c["new"]
         # Button handlers
-        geo_shape.on_click(_geo_shape)
-        scn_clear.on_click(_scn_clear)
-        scn_saves.on_click(_scn_saves)
-        geo_color.on_click(_geo_color)
-        # Slider handlers
-        field.observe(_field, names="value")
-        field_nx.observe(_field_nx, names="value")
-        field_ny.observe(_field_ny, names="value")
-        field_nz.observe(_field_nz, names="value")
-        field_iso.observe(_field_iso, names="value")
-        # Put it all together
-        # Labels separately
-        gui = VBox([scn_clear, scn_saves, geo_shape, geo_color, field,
-                    field_iso, field_nx, field_ny, field_nz])
-        children = HBox([gui, scene])
+        self.controls['geo_shape'].on_click(_geo_shape)
+        self.controls['scn_clear'].on_click(_scn_clear)
+        self.controls['scn_saves'].on_click(_scn_saves)
+        self.controls['geo_color'].on_click(_geo_color)
+        # Field handler
+        def _field(c):
+            if c['new'] == 'null':
+                for key in ['field_iso', 'field_nx', 'field_ny', 'field_nz']:
+                    self.controls.pop(key)
+            else:
+                self.controls['field_iso'] = FloatSlider(min=3.0, max=10.0,
+                                                         description="Iso.",
+                                                         layout=gui_lo)
+                self.controls['field_nx'] = IntSlider(description="N$_{x}$",
+                                                      **field_n_lims)
+                self.controls['field_ny'] = IntSlider(description="N$_{y}$",
+                                                      **field_n_lims)
+                self.controls['field_nz'] = IntSlider(description="N$_{z}$",
+                                                      **field_n_lims)
+                # Slider callbacks
+                def _field_iso(c): self.scene.field_iso = c["new"]
+                def _field_nx(c): self.scene.field_nx = c["new"]
+                def _field_ny(c): self.scene.field_ny = c["new"]
+                def _field_nz(c): self.scene.field_nz = c["new"]
+                # Slider handlers
+                self.controls['field_iso'].observe(_field_iso, names="value")
+                self.controls['field_nx'].observe(_field_nx, names="value")
+                self.controls['field_ny'].observe(_field_ny, names="value")
+                self.controls['field_nz'].observe(_field_nz, names="value")
+            print(len(self.gui.children))
+            self.gui = VBox([val for key, val in self.controls.items()])
+            self.set_gui()
+
+        self.controls['field'].observe(_field, names="value")
+        self.gui = VBox([val for key, val in self.controls.items()])
+
+    def set_gui(self):
+        self.children[0].children[0].children = self.gui.children
+#        self.on_displayed(TestContainer._fire_children_displayed)
+
+    def __init__(self, *args, **kwargs):
+        self.scene = TestScene()
+        self.init_gui()
+        self.children = [HBox([self.gui, self.scene])]
         super(TestContainer, self).__init__(*args,
-                                            children=[children],
-                                            scene=scene,
+                                            children=self.children,
+                                            scene=self.scene,
                                             **kwargs)
