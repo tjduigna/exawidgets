@@ -638,6 +638,8 @@ class App3D {
                                                wireframe: true});
         var frame = new THREE.Mesh(geometry, mat);
         var filled = new THREE.Mesh(geometry, material);
+        console.log(geometry);
+        console.log(frame);
         this.scene.add(filled);
         this.scene.add(frame);
         return [filled, frame];

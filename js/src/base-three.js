@@ -5,8 +5,10 @@
 base-three.js
 =================
 */
+"use strict";
 var base = require("./base.js");
 var THREE = require("three");
+var App3D = require("./app3d.js").App3D;
 var TBC = require("three-trackballcontrols");
 
 class ThreeSceneModel extends base.BaseDOMModel {

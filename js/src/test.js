@@ -10,11 +10,12 @@ Jupyter notebook environment.
 "use strict";
 var THREE = require("three");
 var base = require("./base.js");
+var app3d = require("./app3d.js");
 var bthree = require("./base-three.js");
-var App3D = require("./app3d.js").App3D;
 var Field = require("./field.js").ScalarField;
 var num = require("./num.js");
 
+console.log(app3d);
 
 class TestSceneModel extends bthree.ThreeSceneModel {
 
@@ -39,6 +40,8 @@ class TestSceneView extends bthree.ThreeSceneView {
 
     init() {
         super.init();
+        console.log(app3d);
+        this.app3d = new app3d.App3D(this);
         this.init_listeners();
         this.test_geometry();
         this.field_params = {
@@ -53,7 +56,6 @@ class TestSceneView extends bthree.ThreeSceneView {
             "dxj": 0.0, "dyi": 0.0, "dzi": 0.0,
             "dxk": 0.0, "dyk": 0.0, "dzj": 0.0,
         };
-        this.app3d = new App3D(this);
         this.add_meshes();
         this.animation();
     }
@@ -95,6 +97,7 @@ class TestSceneView extends bthree.ThreeSceneView {
         this.field_params["nx"] = this.model.get("field_nx");
         this.field_params["ny"] = this.model.get("field_ny");
         this.field_params["nz"] = this.model.get("field_nz");
+        console.log(this.field_params);
         var thisfield = new Field(this.field_params,
                                               num[field_type]);
         this.meshes = this.app3d.add_scalar_field(thisfield,

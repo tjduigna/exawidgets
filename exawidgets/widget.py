@@ -15,8 +15,8 @@ import os
 from collections import OrderedDict
 from base64 import b64decode
 from ipywidgets import (Widget, DOMWidget, Box, VBox, HBox, Label,
-                        Dropdown, IntSlider, FloatSlider, Button,
-                        Layout, widget_serialization, register)
+                        Dropdown, IntSlider, FloatSlider, Button, interactive,
+                        Layout, widget_serialization, register, jslink)
 from traitlets import Unicode, Bool, List, Instance, Int, Float
 
 
@@ -137,14 +137,13 @@ class TestContainer(BaseBox):
                                  layout=gui_lo)),
             ('geo_color', Button(icon="paint-brush", description="  Color",
                                  layout=gui_lo)),
-            ('field', Dropdown(options=field_options, layout=gui_lo))
+            ('field_options', Dropdown(options=field_options, layout=gui_lo)),
         ])
         # Button callbacks
         def _scn_clear(b): self.scene.scn_clear = not self.scene.scn_clear == True
         def _scn_saves(b): self.scene.scn_saves = not self.scene.scn_saves == True
         def _geo_shape(b): self.scene.geo_shape = not self.scene.geo_shape == True
         def _geo_color(b): self.scene.geo_color = not self.scene.geo_color == True
-        def _field(c): self.scene.field = c["new"]
         # Button handlers
         self.controls['geo_shape'].on_click(_geo_shape)
         self.controls['scn_clear'].on_click(_scn_clear)
@@ -152,6 +151,7 @@ class TestContainer(BaseBox):
         self.controls['geo_color'].on_click(_geo_color)
         # Field handler
         def _field(c):
+            print(c)
             if c['new'] == 'null':
                 for key in ['field_iso', 'field_nx', 'field_ny', 'field_nz']:
                     self.controls.pop(key)
@@ -159,11 +159,11 @@ class TestContainer(BaseBox):
                 self.controls['field_iso'] = FloatSlider(min=3.0, max=10.0,
                                                          description="Iso.",
                                                          layout=gui_lo)
-                self.controls['field_nx'] = IntSlider(description="N$_{x}$",
+                self.controls['field_nx'] = IntSlider(description="Nx",
                                                       **field_n_lims)
-                self.controls['field_ny'] = IntSlider(description="N$_{y}$",
+                self.controls['field_ny'] = IntSlider(description="Ny",
                                                       **field_n_lims)
-                self.controls['field_nz'] = IntSlider(description="N$_{z}$",
+                self.controls['field_nz'] = IntSlider(description="Nz",
                                                       **field_n_lims)
                 # Slider callbacks
                 def _field_iso(c): self.scene.field_iso = c["new"]
@@ -175,7 +175,6 @@ class TestContainer(BaseBox):
                 self.controls['field_nx'].observe(_field_nx, names="value")
                 self.controls['field_ny'].observe(_field_ny, names="value")
                 self.controls['field_nz'].observe(_field_nz, names="value")
-            print(len(self.gui.children))
             self.gui = VBox([val for key, val in self.controls.items()])
             self.set_gui()
 
@@ -184,7 +183,7 @@ class TestContainer(BaseBox):
 
     def set_gui(self):
         self.children[0].children[0].children = self.gui.children
-#        self.on_displayed(TestContainer._fire_children_displayed)
+        self.on_displayed(TestContainer._fire_children_displayed)
 
     def __init__(self, *args, **kwargs):
         self.scene = TestScene()
